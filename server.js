@@ -22,18 +22,39 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 app.use(session({ secret: 'n3ag-ozel', resave: false, saveUninitialized: true }));
 
-// KAYIT OLMA
+// KAYIT OLMA (Hem kullanıcı adı hem e-posta kontrolü)
 app.post('/kayit-et', async (req, res) => {
     try {
         const { username, email, password } = req.body;
+        
+        // 1. Kullanıcı adı kontrolü
         const existingUser = await User.findOne({ username });
         if (existingUser) {
-            return res.send(`<script>localStorage.setItem('hata', 'Bu kullanıcı adı zaten alınmış!'); window.location.href = "/kayit.html";</script>`);
+            return res.send(`
+                <script>
+                    localStorage.setItem('hata', 'Bu kullanıcı adı zaten alınmış!');
+                    window.location.href = "/kayit.html";
+                </script>
+            `);
         }
+
+        // 2. E-posta kontrolü (İstediğin ekleme burası)
+        const existingEmail = await User.findOne({ email });
+        if (existingEmail) {
+            return res.send(`
+                <script>
+                    localStorage.setItem('hata', 'Bu e-posta adresi zaten kayıtlı!');
+                    window.location.href = "/kayit.html";
+                </script>
+            `);
+        }
+
         const newUser = new User({ username, email, password });
         await newUser.save();
         res.send("<script>alert('Kayıt Başarılı!'); window.location.href='/index.html';</script>");
-    } catch (err) { res.status(500).send("Hata: " + err.message); }
+    } catch (err) { 
+        res.status(500).send("Hata: " + err.message); 
+    }
 });
 
 // GİRİŞ YAPMA
