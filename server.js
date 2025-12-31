@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'n3ag.services@gmail.com',
-        pass: 'wlxi wbki tilx fetp' // Uygulama şifren doğru görünüyor
+        pass: 'wlxiwbkitilxfetp' // Uygulama şifren doğru görünüyor
     }
 });
 
@@ -92,13 +92,15 @@ app.post('/sifre-sifirla', async (req, res) => {
                 text: `Merhaba ${user.username},\n\nŞifreniz başarıyla değiştirildi. Eğer bu işlemi siz yapmadıysanız lütfen acilen bizimle iletişime geçin.\n\nİyi günler dileriz.`
             };
 
-            // Maili gönder (Hata olsa bile şifre değiştiği için işlemi bitir)
-            transporter.sendMail(mailOptions, (error, info) => {
-                if (error) console.log("Mail gönderim hatası:", error);
-                else console.log("Mail başarıyla gönderildi: " + info.response);
-            });
+           // ŞİFRE SIFIRLAMA bloğu içindeki mail gönderme kısmını şununla değiştir:
+try {
+    await transporter.sendMail(mailOptions);
+    console.log("Mail başarıyla gönderildi.");
+} catch (error) {
+    console.log("Mail gönderim hatası:", error);
+}
 
-            res.send("<script>alert('Şifre güncellendi ve bilgilendirme maili gönderildi!'); window.location.href='/index.html';</script>");
+res.send("<script>alert('Şifre güncellendi ve bilgilendirme maili gönderildi!'); window.location.href='/index.html';</script>");
         } else {
             res.send("<script>alert('Kullanıcı bulunamadı!'); window.location.href='javascript:history.back()';</script>");
         }
