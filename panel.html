@@ -48,5 +48,14 @@
 
         <button onclick="location.href='index.html'" class="logout-btn">Güvenli Çıkış</button>
     </div>
+    <script>
+    fetch('/kullanici-verisi')
+        .then(res => res.json())
+        .then(user => {
+            document.querySelector('h2').innerText = "Hoş geldin, " + user.username + "!";
+        })
+        .catch(() => window.location.href = "/index.html"); // Giriş yapmamışsa atar
+</script>
 </body>
+
 </html>

@@ -7,9 +7,9 @@
 </head>
 <body>
     <div class="login-panel">
-        <h2>Şifremi Unuttum</h2>
+        <h2>Şifremi Yenile</h2>
         <p style="color: #ccc; font-size: 0.9em; margin-bottom: 20px;">
-            Kayıtlı e-posta adresinizi girin, size talimatları gönderelim.
+            E-postanı ve yeni şifreni girerek hesabını güncelle.
         </p>
         <form action="/sifre-sifirla" method="POST">
             <div class="input-group">
@@ -17,24 +17,16 @@
                 <label>E-Posta Adresi</label>
                 <span class="input-line"></span>
             </div>
-            <button type="submit" class="login-button">Sıfırlama Bağlantısı Gönder</button>
+            <div class="input-group">
+                <input type="password" name="newPassword" required>
+                <label>Yeni Şifre</label>
+                <span class="input-line"></span>
+            </div>
+            <button type="submit" class="login-button">Şifreyi Güncelle</button>
         </form>
         <div class="register-link">
             <a href="index.html">Giriş Sayfasına Dön</a>
         </div>
     </div>
-</body>
-</html>
-
-
-
-
-
-
-
-
-
-    </script>
-
 </body>
 </html>
