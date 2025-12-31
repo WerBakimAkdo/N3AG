@@ -42,7 +42,6 @@ app.use(session({ secret: 'n3ag-ozel', resave: false, saveUninitialized: true })
 // --- 5. ROTALAR ---
 
 
-
 app.post('/sifre-hatirlat', async (req, res) => {
     try {
         const { identifier } = req.body;
@@ -80,8 +79,6 @@ app.post('/sifre-hatirlat', async (req, res) => {
     }
 });
 
-
-
 // KAYIT OLMA
 app.post('/kayit-et', async (req, res) => {
     try {
@@ -106,43 +103,7 @@ app.post('/giris-yap', async (req, res) => {
     }
 });
 
-// ŞİFRE TALEBİ GÖNDERME
-app.post('/sifre-hatirlat', async (req, res) => {
-    try {
-        const { identifier } = req.body;
-        const user = await User.findOne({ $or: [{ email: identifier }, { username: identifier }] });
 
-        if (!user) return res.send("<script>alert('Kullanıcı bulunamadı!'); window.location.href='/sifre-talebi.html';</script>");
-
-        const host = req.get('host');
-        // KESİN ÇÖZÜM: Linki manuel kuruyoruz, Render'da hata payı sıfır
-       const resetLink = `${req.protocol}://${req.get('host')}/sifre-yenileme.html?id=${user._id}`;
-
-
-
-        const mailOptions = {
-            from: '"N3AG Destek" <n3ag.services@gmail.com>',
-            to: user.email,
-            subject: 'N3AG - Şifre Sıfırlama',
-            html: `<h3>Merhaba ${user.username},</h3>
-                   <p>Şifreni sıfırlamak için aşağıdaki linke tıkla:</p>
-                   <a href="${resetLink}">${resetLink}</a>`
-        };
-console.log("📩 Şifre sıfırlama isteği geldi:", identifier);
-console.log("👤 Bulunan kullanıcı:", user.email);
-console.log("📨 Mail gönderiliyor...");
-
-
-        await transporter.sendMail(mailOptions);
-        res.send("<script>alert('Sıfırlama linki mailinize gönderildi!'); window.location.href='/index.html';</script>");
-    } catch (err) {
-        console.log("✅ Mail başarıyla gönderildi");
-
-    console.error("MAIL GÖNDERME HATASI:", err);
-    res.status(500).send("Mail gönderilemedi.");
-}
-
-});
 
 // ŞİFREYİ GÜNCELLEME
 app.post('/sifre-guncelle', async (req, res) => {
