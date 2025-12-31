@@ -10,6 +10,47 @@ const mongoURI = process.env.MONGO_URI || "mongodb+srv://shizophrendevil:Migrosv
 
 mongoose.connect(mongoURI).then(() => console.log("🚀 MongoDB Bağlandı.")).catch(err => console.error(err));
 
+
+const nodemailer = require('nodemailer'); // En üste ekle
+
+// Mail Gönderici Ayarları (Gmail örneği)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'n3ag.services@gmail.com', // Kendi mailin
+        pass: 'wlxi wbki tilx fetp' // Google'dan alacağın 16 haneli kod
+    }
+});
+
+// ŞİFRE SIFIRLAMA (Mail Destekli)
+app.post('/sifre-sifirla', async (req, res) => {
+    try {
+        const { identifier, password } = req.body;
+        const user = await User.findOne({ $or: [{ email: identifier }, { username: identifier }] });
+
+        if (user) {
+            user.password = password;
+            await user.save();
+
+            // Şifre değişince kullanıcıya bilgi maili atalım
+            const mailOptions = {
+                from: 'N3AG Destek <n3ag.services@gmail.com>',
+                to: user.email,
+                subject: 'N3AG - Şifreniz Güncellendi!',
+                text: `Merhaba ${user.username}, şifreniz başarıyla değiştirildi. Eğer bu işlemi siz yapmadıysanız lütfen bizimle iletişime geçin.`
+            };
+
+            transporter.sendMail(mailOptions); // Maili gönder
+
+            res.send("<script>alert('Şifre güncellendi ve mail gönderildi!'); window.location.href='/index.html';</script>");
+        } else {
+            res.send("<script>alert('Kullanıcı bulunamadı!'); window.location.href='javascript:history.back()';</script>");
+        }
+    } catch (err) {
+        res.status(500).send("Hata: " + err.message);
+    }
+});
+
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true },
