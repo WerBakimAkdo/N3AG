@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>N3AG - Şifre Yenileme</title>
+    <title>N3AG - Yeni Şifre</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,27 +13,21 @@
             <div class="input-group">
                 <input type="password" name="newPassword" placeholder="Yeni Şifreniz" required>
             </div>
-            <button type="submit" class="login-button">Şifreyi Güncelle</button>
+            <button type="submit" class="login-button">Şifreyi Kaydet</button>
         </form>
     </div>
 
     <script>
-       window.onload = function() {
-    const fullUrl = window.location.href;
-    console.log("Tam URL:", fullUrl);
-    
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('id');
-    
-    if (id) {
-        document.getElementById('userIdInput').value = id;
-        console.log("ID başarıyla atandı:", id);
-    } else {
-        // Eğer ID yoksa, URL'de ne olduğunu ekrana yazdır ki görelim
-        alert("Hata: Linkte ID bulunamadı!\nŞu anki URL: " + fullUrl);
-        window.location.href = "/index.html";
-    }
-};
+        document.addEventListener("DOMContentLoaded", function() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            if (id) {
+                document.getElementById('userIdInput').value = id;
+            } else {
+                alert("Geçersiz bağlantı! Lütfen maildeki linke tıklayın.");
+                window.location.href = "/index.html";
+            }
+        });
     </script>
 </body>
 </html>

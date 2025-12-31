@@ -5,10 +5,10 @@ const session = require('express-session');
 const nodemailer = require('nodemailer');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 10000;
 
 // --- 1. MONGODB BAĞLANTISI ---
-const mongoURI = process.env.MONGO_URI || "mongodb+srv://shizophrendevil:Migrosvsa101@n3ag.a2fwajs.mongodb.net/N3AG_Project?retryWrites=true&w=majority";
+const mongoURI = "mongodb+srv://shizophrendevil:Migrosvsa101@n3ag.a2fwajs.mongodb.net/N3AG_Project?retryWrites=true&w=majority";
 mongoose.connect(mongoURI).then(() => console.log("🚀 MongoDB Bağlandı."));
 
 // --- 2. MAIL AYARLARI ---
@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
     secure: true, 
     auth: {
         user: 'n3ag.services@gmail.com',
-        pass: 'zuuf kbqb jmbk axzm' 
+        pass: 'wlxiwbkitilxfetp' 
     }
 });
 
@@ -37,51 +37,65 @@ app.use(session({ secret: 'n3ag-ozel', resave: false, saveUninitialized: true })
 
 // --- 5. ROTALAR ---
 
-// ŞİFRE SIFIRLAMA LİNKİ GÖNDERME
-// server.js içindeki /sifre-hatirlat rotasını bununla değiştir
+// KAYIT OLMA
+app.post('/kayit-et', async (req, res) => {
+    try {
+        const { username, email, password } = req.body;
+        const newUser = new User({ username, email, password });
+        await newUser.save();
+        res.send("<script>alert('Kayıt Başarılı!'); window.location.href='/index.html';</script>");
+    } catch (err) {
+        res.send(`<script>alert('Hata: Kullanıcı adı veya e-posta zaten kullanımda!'); history.back();</script>`);
+    }
+});
+
+// GİRİŞ YAPMA
+app.post('/giris-yap', async (req, res) => {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username, password });
+    if (user) {
+        req.session.user = user;
+        res.redirect('/panel.html');
+    } else {
+        res.send("<script>alert('Hatalı giriş!'); window.location.href='/index.html';</script>");
+    }
+});
+
+// ŞİFRE TALEBİ GÖNDERME
 app.post('/sifre-hatirlat', async (req, res) => {
     try {
         const { identifier } = req.body;
         const user = await User.findOne({ $or: [{ email: identifier }, { username: identifier }] });
 
-        if (!user) {
-            return res.send("<script>alert('Böyle bir kullanıcı bulunamadı!'); window.location.href='/sifre-talebi.html';</script>");
-        }
+        if (!user) return res.send("<script>alert('Kullanıcı bulunamadı!'); window.location.href='/sifre-talebi.html';</script>");
 
         const host = req.get('host');
-        // Render'da https üzerinden çalıştığımız için linki garantiye alıyoruz
-        const resetLink = `https://${host}/sifre-yenileme.html?id=${user._id.toString()}`;
+        // KESİN ÇÖZÜM: Linki manuel kuruyoruz, Render'da hata payı sıfır
+        const resetLink = "https://" + host + "/sifre-yenileme.html?id=" + user._id.toString();
 
         const mailOptions = {
             from: '"N3AG Destek" <n3ag.services@gmail.com>',
             to: user.email,
             subject: 'N3AG - Şifre Sıfırlama',
-            html: `
-                <div style="background:#1a1a1a; color:white; padding:20px; border-radius:10px; font-family:sans-serif;">
-                    <h2>N3AG Şifre Yenileme</h2>
-                    <p>Merhaba ${user.username}, şifreni sıfırlamak için butona tıkla:</p>
-                    <a href="${resetLink}" style="background:#00f2fe; color:black; padding:10px 20px; text-decoration:none; border-radius:5px; font-weight:bold;">Şifremi Sıfırla</a>
-                </div>`
+            html: `<h3>Merhaba ${user.username},</h3>
+                   <p>Şifreni sıfırlamak için aşağıdaki linke tıkla:</p>
+                   <a href="${resetLink}">${resetLink}</a>`
         };
 
         await transporter.sendMail(mailOptions);
-        res.send("<script>alert('Sıfırlama linki e-posta adresinize gönderildi!'); window.location.href='/index.html';</script>");
-    } catch (err) {
-        console.error("Mail Hatası:", err);
-        res.status(500).send("Sunucu hatası oluştu.");
-    }
+        res.send("<script>alert('Sıfırlama linki mailinize gönderildi!'); window.location.href='/index.html';</script>");
+    } catch (err) { res.status(500).send("Sunucu hatası."); }
 });
-// YENİ ŞİFREYİ KAYDETME
+
+// ŞİFREYİ GÜNCELLEME
 app.post('/sifre-guncelle', async (req, res) => {
     try {
         const { userId, newPassword } = req.body;
+        if (!userId) return res.send("Hata: Kullanıcı ID bulunamadı.");
+        
         await User.findByIdAndUpdate(userId, { password: newPassword });
-        res.send("<script>alert('Şifre güncellendi!'); window.location.href='/index.html';</script>");
-    } catch (err) { res.status(500).send("Hata oluştu."); }
+        res.send("<script>alert('Şifreniz güncellendi!'); window.location.href='/index.html';</script>");
+    } catch (err) { res.status(500).send("Güncelleme hatası."); }
 });
 
-// Kayıt ve Giriş
-app.post('/kayit-et', async (req, res) => { /* senin kayıt kodun */ });
-app.post('/giris-yap', async (req, res) => { /* senin giriş kodun */ });
-
-app.listen(port, () => console.log(`Aktif port: ${port}`));
+app.listen(port, () => console.log(`🚀 Sunucu ${port} portunda aktif.`));
