@@ -17,8 +17,8 @@ mongoose.connect(mongoURI)
 // --- 2. MAIL AYARLARI ---
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, 
+    port: 587,
+    secure: false, // 587 portu için false olmalı
     auth: {
         user: 'n3ag.services@gmail.com',
         pass: 'wlxiwbkitilxfetp'
@@ -26,8 +26,7 @@ const transporter = nodemailer.createTransport({
     tls: {
         rejectUnauthorized: false,
         minVersion: "TLSv1.2"
-    },
-    connectionTimeout: 15000 
+    }
 });
 
 // --- 3. VERİ MODELİ ---
@@ -78,42 +77,43 @@ app.post('/giris-yap', async (req, res) => {
     }
 });
 
-// ŞİFRE SIFIRLAMA
-app.post('/sifre-sifirla', async (req, res) => {
+// --- 5. ŞİFRE HATIRLATMA (GÜVENLİ VE MAİLLİ) ---
+app.post('/sifre-hatirlat', async (req, res) => {
     try {
-        const { identifier, password } = req.body;
+        const { identifier } = req.body; // Sadece mail veya kullanıcı adı alıyoruz
         const user = await User.findOne({ $or: [{ email: identifier }, { username: identifier }] });
 
         if (!user) {
-            return res.send("<script>alert('Kullanıcı bulunamadı!'); window.location.href='javascript:history.back()';</script>");
+            return res.send("<script>alert('Böyle bir kullanıcı bulunamadı!'); window.location.href='javascript:history.back()';</script>");
         }
-
-        user.password = password;
-        await user.save();
 
         const mailOptions = {
             from: '"N3AG Destek" <n3ag.services@gmail.com>',
             to: user.email,
-            subject: 'N3AG - Şifreniz Güncellendi!',
-            text: `Merhaba ${user.username}, şifreniz başarıyla değiştirildi.`
+            subject: 'N3AG - Şifre Hatırlatma',
+            html: `
+                <h3>Merhaba ${user.username},</h3>
+                <p>Şifreni unuttuğunu duyduk. İşte güncel giriş bilgilerin:</p>
+                <p><b>Kullanıcı Adı:</b> ${user.username}</p>
+                <p><b>Şifre:</b> ${user.password}</p>
+                <br>
+                <p>Güvenliğin için bu bilgileri kimseyle paylaşma.</p>
+            `
         };
 
         try {
-            console.log("Mail gönderim denemesi başladı...");
+            console.log("Şifre hatırlatma maili gönderiliyor...");
             await transporter.sendMail(mailOptions);
-            console.log("✅ Mail başarıyla iletildi.");
-            res.send("<script>alert('Şifre güncellendi ve mail gönderildi!'); window.location.href='/index.html';</script>");
+            res.send("<script>alert('Şifreniz kayıtlı e-posta adresinize gönderildi!'); window.location.href='/index.html';</script>");
         } catch (mailErr) {
-            console.error("❌ MAIL HATASI:", mailErr.message);
-            res.send("<script>alert('Şifre değişti ama mail gönderilemedi (Hata: " + mailErr.message + ")'); window.location.href='/index.html';</script>");
+            console.error("Mail Hatası:", mailErr.message);
+            res.send("<script>alert('Mail gönderilirken bir hata oluştu. Lütfen tekrar deneyin.'); window.location.href='javascript:history.back()';</script>");
         }
 
     } catch (err) {
-        console.error("SİSTEM HATASI:", err);
         res.status(500).send("Sunucu hatası.");
     }
 });
-
 app.get('/kullanici-verisi', (req, res) => {
     if (req.session.user) res.json(req.session.user);
     else res.status(401).send("Yetkisiz");
