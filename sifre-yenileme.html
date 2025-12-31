@@ -7,23 +7,21 @@
 </head>
 <body>
     <div class="login-panel">
-        <h2>Şifremi Yenile</h2>
+        <h2>Şifre Yenile</h2>
         <form action="/sifre-sifirla" method="POST">
             <div class="input-group">
-                <input type="email" name="email" required>
-                <label>E-Posta Adresi</label>
+                <input type="text" name="identifier" required>
+                <label>Kullanıcı Adı veya E-Posta</label>
                 <span class="input-line"></span>
             </div>
             <div class="input-group">
-                <input type="password" name="newPassword" required>
+                <input type="password" name="password" required>
                 <label>Yeni Şifre</label>
                 <span class="input-line"></span>
             </div>
             <button type="submit" class="login-button">Şifreyi Güncelle</button>
         </form>
-        <div class="register-link">
-            <a href="index.html">Giriş Sayfasına Dön</a>
-        </div>
+        <div class="register-link"><a href="index.html">Geri Dön</a></div>
     </div>
 </body>
 </html>
