@@ -17,8 +17,12 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASS
-    }
+    },
+    connectionTimeout: 5000,
+    greetingTimeout: 5000,
+    socketTimeout: 5000
 });
+
 
 
 
@@ -43,6 +47,8 @@ app.post('/sifre-hatirlat', async (req, res) => {
     try {
         const { identifier } = req.body;
 
+        console.log("📩 Şifre isteği:", identifier);
+
         const user = await User.findOne({
             $or: [{ email: identifier }, { username: identifier }]
         });
@@ -51,24 +57,26 @@ app.post('/sifre-hatirlat', async (req, res) => {
             return res.send("<script>alert('Kullanıcı bulunamadı!'); window.location.href='/sifre-talebi.html';</script>");
         }
 
+        console.log("👤 Kullanıcı bulundu:", user.email);
+
         const resetLink = `${req.protocol}://${req.get('host')}/sifre-yenileme.html?id=${user._id}`;
+
+        console.log("📨 Mail gönderiliyor...");
 
         await transporter.sendMail({
             from: `"N3AG Destek" <${process.env.MAIL_USER}>`,
             to: user.email,
             subject: 'N3AG - Şifre Sıfırlama',
-            html: `
-                <h3>Merhaba ${user.username}</h3>
-                <p>Şifreni sıfırlamak için aşağıdaki linke tıkla:</p>
-                <a href="${resetLink}">${resetLink}</a>
-            `
+            html: `<p>Şifre sıfırlamak için:</p><a href="${resetLink}">${resetLink}</a>`
         });
+
+        console.log("✅ Mail gönderildi");
 
         res.send("<script>alert('Mail gönderildi!'); window.location.href='/index.html';</script>");
 
     } catch (err) {
-        console.error("MAIL ERROR:", err);
-        res.status(500).send("Mail gönderilemedi.");
+        console.error("❌ MAIL HATASI:", err);
+        res.send("<script>alert('Mail gönderilemedi!'); window.location.href='/sifre-talebi.html';</script>");
     }
 });
 
@@ -120,10 +128,16 @@ app.post('/sifre-hatirlat', async (req, res) => {
                    <p>Şifreni sıfırlamak için aşağıdaki linke tıkla:</p>
                    <a href="${resetLink}">${resetLink}</a>`
         };
+console.log("📩 Şifre sıfırlama isteği geldi:", identifier);
+console.log("👤 Bulunan kullanıcı:", user.email);
+console.log("📨 Mail gönderiliyor...");
+
 
         await transporter.sendMail(mailOptions);
         res.send("<script>alert('Sıfırlama linki mailinize gönderildi!'); window.location.href='/index.html';</script>");
     } catch (err) {
+        console.log("✅ Mail başarıyla gönderildi");
+
     console.error("MAIL GÖNDERME HATASI:", err);
     res.status(500).send("Mail gönderilemedi.");
 }
