@@ -18,18 +18,22 @@
     </div>
 
     <script>
-        window.onload = function() {
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
-            console.log("Gelen ID:", id);
-
-            if (id) {
-                document.getElementById('userIdInput').value = id;
-            } else {
-                alert("Hata: Link geçersiz! (ID bulunamadı)");
-                window.location.href = "/index.html";
-            }
-        };
+       window.onload = function() {
+    const fullUrl = window.location.href;
+    console.log("Tam URL:", fullUrl);
+    
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    
+    if (id) {
+        document.getElementById('userIdInput').value = id;
+        console.log("ID başarıyla atandı:", id);
+    } else {
+        // Eğer ID yoksa, URL'de ne olduğunu ekrana yazdır ki görelim
+        alert("Hata: Linkte ID bulunamadı!\nŞu anki URL: " + fullUrl);
+        window.location.href = "/index.html";
+    }
+};
     </script>
 </body>
 </html>
