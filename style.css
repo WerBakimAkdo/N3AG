@@ -1,0 +1,219 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-color: #000000; /* Yeşil */
+    --accent-color: #ffffff; /* Aqua mavisi */
+    --text-color-light: #f0f2f5;
+    --text-color-dark: #333;
+    --bg-dark-1: #282c34;
+    --bg-dark-2: #3a3f47;
+    --glow-color: #ff0000; /* Yanıp sönen efekt için renk */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--bg-dark-1), var(--bg-dark-2));
+    color: var(--text-color-light);
+    overflow: hidden; /* Taşmayı önler */
+}
+
+/* N3AG Logo Animasyonu */
+.logo-section {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.n3ag-logo {
+    font-size: 2.5em;
+    font-weight: 700;
+    color: var(--text-color-light);
+    text-shadow: 0 0 5px var(--glow-color); /* Hafif gölge */
+    animation: pulseGlow 1.5s infinite alternate; /* Yanıp sönme animasyonu */
+}
+
+@keyframes pulseGlow {
+    0% {
+        text-shadow: 0 0 5px var(--glow-color), 0 0 10px var(--glow-color);
+        opacity: 0.8;
+    }
+    100% {
+        text-shadow: 0 0 15px var(--glow-color), 0 0 25px var(--glow-color);
+        opacity: 1;
+    }
+}
+
+/* Giriş Paneli */
+.login-panel {
+    background: rgba(0, 0, 0, 0.4); /* Hafif şeffaf arka plan */
+    border-radius: 15px;
+    padding: 40px;
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.5);
+    width: 380px;
+    max-width: 90%; /* Küçük ekranlarda taşmayı önler */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px); /* Arka planı bulanıklaştır */
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.login-panel h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--accent-color);
+    font-size: 2em;
+    font-weight: 600;
+}
+
+/* Input Grupları */
+.input-group {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px 0;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3); /* Pasif alt çizgi */
+    outline: none;
+    color: var(--text-color-light);
+    font-size: 1em;
+    transition: 0.3s ease;
+}
+
+.input-group label {
+    position: absolute;
+    left: 0;
+    top: 10px;
+    color: rgba(255, 255, 255, 0.6);
+    pointer-events: none;
+    transition: 0.3s ease;
+}
+
+/* Input Fokuslandığında veya Geçerli Olduğunda */
+.input-group input:focus ~ label,
+.input-group input:valid ~ label {
+    top: -20px;
+    font-size: 0.8em;
+    color: var(--accent-color);
+}
+
+/* Alt Çizgi Animasyonu */
+.input-group .input-line {
+    position: absolute;
+    bottom: -2px; /* Input'un hemen altına */
+    left: 0;
+    width: 0; /* Başlangıçta gizli */
+    height: 2px;
+    background: var(--accent-color);
+    transition: 0.3s ease;
+}
+
+.input-group input:focus ~ .input-line,
+.input-group input:valid ~ .input-line {
+    width: 100%; /* Fokuslandığında genişler */
+}
+
+/* Şifremi Unuttum Linki */
+.forgot-password {
+    text-align: right;
+    margin-bottom: 25px;
+}
+
+.forgot-password a {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: color 0.3s ease;
+}
+
+.forgot-password a:hover {
+    color: var(--accent-color);
+}
+
+/* Giriş Butonu */
+.login-button {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 1.1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.login-button:hover {
+    background: #af4c4ce0; /* Hafif koyu */
+    transform: translateY(-2px); /* Hafif yukarı kalkma */
+}
+
+.login-button:active {
+    transform: translateY(0); /* Tıklama anında geri inme */
+}
+
+/* Kayıt Ol Linki */
+.register-link {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.register-link a {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.register-link a:hover {
+    color: var(--text-color-light);
+}
+
+/* Genel Odaklanma Stilleri (Erişilebilirlik için) */
+input:focus, button:focus, a:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+
+
+
+
+
+
+.register-link a {
+    color: #00bcd4;
+    transition: all 0.4s ease-in-out; /* 0.4 saniye sürsün */
+}
+
+.register-link a:hover {
+    color: #ff0000; /* Fare gelince renk değişir */
+    letter-spacing: 1px; /* Harfler arası açılır */
+}
+
+/* Sallanma Animasyonu Tanımı */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-10px); }
+  40%, 80% { transform: translateX(10px); }
+}
+
+/* Bu sınıfı JS ile panele ekleyeceğiz */
+.shake-animation {
+  animation: shake 0.4s ease-in-out;
+}

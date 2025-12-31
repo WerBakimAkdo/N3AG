@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N3AG Giriş Paneli</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo-section">
+            <h1 class="n3ag-logo">N3AG</h1>
+        </div>
+
+        <div class="login-panel">
+            <h2>Giriş Yap</h2>
+
+            <form action="/giris-yap" method="POST">
+    <div class="input-group">
+        <input type="text" name="username" required> 
+        <label>Kullanıcı Adı</label>
+        <span class="input-line"></span>
+    </div>
+    <div class="input-group">
+        <input type="password" name="password" required>
+        <label>Şifre</label>
+        <span class="input-line"></span>
+    </div>
+    <div class="forgot-password">
+        <a href="sifre-yenileme.html">Şifremi Unuttum?</a>
+    </div>
+    <button type="submit" class="login-button">Giriş Yap</button>
+</form>
+
+<script>
+function loginKontrol(event) {
+    event.preventDefault(); // Formun sayfayı yenilemesini durdurur
+    
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+
+    if(user === "admin" && pass === "1234") {
+        alert("Başarıyla giriş yapıldı! Hoşgeldin " + user);
+    } else {
+        // Hata durumunda kutuyu sallama animasyonu tetiklenebilir
+        document.querySelector('.login-panel').classList.add('shake');
+        setTimeout(() => {
+            document.querySelector('.login-panel').classList.remove('shake');
+        }, 500);
+        alert("Hatalı kullanıcı adı veya şifre!");
+    }
+}
+</script>
+
+            <div class="register-link">
+    Hesabın yok mu? <a href="kayit.html" id="show-register">Kayıt Ol</a>
+</div>
+        </div>
+    </div>
+</body>
+</html>
