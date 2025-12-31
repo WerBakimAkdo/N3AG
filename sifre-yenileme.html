@@ -1,30 +1,21 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <title>Şifre Yenile</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="login-panel">
-        <h2>Yeni Şifre Belirle</h2>
-        <form action="/sifre-guncelle" method="POST">
-            <input type="hidden" name="userId" id="userIdInput">
-            <div class="input-group">
-                <input type="password" name="newPassword" placeholder="Yeni Şifre" required>
-            </div>
-            <button type="submit" class="login-button">Güncelle</button>
-        </form>
-    </div>
-    <script>
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
-        if (id) {
-            document.getElementById('userIdInput').value = id;
-        } else {
-            alert("Bağlantı geçersiz!");
-            window.location.href = "/index.html";
-        }
-    </script>
-</body>
-</html>
+<script>
+    // URL'deki parametreleri çek
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+
+    console.log("Gelen ID:", id); // F12 konsolunda ID'yi görmen lazım
+
+    if (id && id.length > 5) {
+        // ID varsa inputa yerleştir
+        document.getElementById('userIdInput').value = id;
+    } else {
+        // ID yoksa veya hatalıysa ekranda hata göster, hemen geri atma!
+        document.body.innerHTML = `
+            <div style="color:white; background:red; padding:20px; text-align:center;">
+                <h2>HATA: ID BULUNAMADI!</h2>
+                <p>Maildeki linkin sonundaki ?id= kısmının tam olduğundan emin olun.</p>
+                <p>Mevcut URL: ${window.location.href}</p>
+                <a href="/index.html" style="color:yellow;">Girişe Dön</a>
+            </div>`;
+    }
+</script>

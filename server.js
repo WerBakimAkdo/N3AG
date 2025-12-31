@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
     secure: true, 
     auth: {
         user: 'n3ag.services@gmail.com',
-        pass: 'wlxiwbkitilxfetp' 
+        pass: 'zuuf kbqb jmbk axzm' 
     }
 });
 
@@ -48,7 +48,7 @@ app.post('/sifre-hatirlat', async (req, res) => {
         const host = req.get('host');
         // Render için dinamik protokol (http/https)
         const protocol = req.headers['x-forwarded-proto'] || 'http';
-        const resetLink = `${protocol}://${host}/sifre-yenile.html?id=${user._id}`;
+        const resetLink = `https://${host}/sifre-yenile.html?id=${user._id.toString()}`;
 
         const mailOptions = {
             from: '"N3AG Destek" <n3ag.services@gmail.com>',
