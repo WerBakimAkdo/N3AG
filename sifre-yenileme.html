@@ -2,32 +2,29 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>N3AG - Yeni Şifre Oluştur</title>
+    <title>Şifre Yenile</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="login-panel">
-    <h2>Yeni Şifre Belirle</h2>
-    <form action="/update-password" method="POST">
-        <input type="hidden" name="userId" id="userIdInput">
-        
-        <div class="input-group">
-            <input type="password" name="newPassword" placeholder="Yeni Şifreniz" required>
-        </div>
-        <button type="submit" class="login-button">Şifreyi Kaydet</button>
-    </form>
-</div>
-
-<script>
-    // URL'den ?id=12345 kısmını çekip input'a yerleştirir
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('id');
-    if (id) {
-        document.getElementById('userIdInput').value = id;
-    } else {
-        alert("Bağlantı geçersiz veya süresi dolmuş!");
-        window.location.href = "/index.html";
-    }
-</script>
+        <h2>Yeni Şifre Belirle</h2>
+        <form action="/sifre-guncelle" method="POST">
+            <input type="hidden" name="userId" id="userIdInput">
+            <div class="input-group">
+                <input type="password" name="newPassword" placeholder="Yeni Şifre" required>
+            </div>
+            <button type="submit" class="login-button">Güncelle</button>
+        </form>
+    </div>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        if (id) {
+            document.getElementById('userIdInput').value = id;
+        } else {
+            alert("Bağlantı geçersiz!");
+            window.location.href = "/index.html";
+        }
+    </script>
 </body>
 </html>
