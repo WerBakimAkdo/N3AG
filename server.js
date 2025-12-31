@@ -13,14 +13,14 @@ mongoose.connect(mongoURI).then(() => console.log("🚀 MongoDB Bağlandı."));
 
 // --- 2. MAIL AYARLARI ---
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, 
+    service: 'gmail',
     auth: {
-        user: 'n3ag.services@gmail.com',
-        pass: 'wlxiwbkitilxfetp' 
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS
     }
 });
+
+
 
 // --- 3. VERİ MODELİ ---
 const User = mongoose.model('User', new mongoose.Schema({
@@ -36,6 +36,43 @@ app.use(express.static(path.join(__dirname)));
 app.use(session({ secret: 'n3ag-ozel', resave: false, saveUninitialized: true }));
 
 // --- 5. ROTALAR ---
+
+
+
+app.post('/sifre-hatirlat', async (req, res) => {
+    try {
+        const { identifier } = req.body;
+
+        const user = await User.findOne({
+            $or: [{ email: identifier }, { username: identifier }]
+        });
+
+        if (!user) {
+            return res.send("<script>alert('Kullanıcı bulunamadı!'); window.location.href='/sifre-talebi.html';</script>");
+        }
+
+        const resetLink = `${req.protocol}://${req.get('host')}/sifre-yenileme.html?id=${user._id}`;
+
+        await transporter.sendMail({
+            from: `"N3AG Destek" <${process.env.MAIL_USER}>`,
+            to: user.email,
+            subject: 'N3AG - Şifre Sıfırlama',
+            html: `
+                <h3>Merhaba ${user.username}</h3>
+                <p>Şifreni sıfırlamak için aşağıdaki linke tıkla:</p>
+                <a href="${resetLink}">${resetLink}</a>
+            `
+        });
+
+        res.send("<script>alert('Mail gönderildi!'); window.location.href='/index.html';</script>");
+
+    } catch (err) {
+        console.error("MAIL ERROR:", err);
+        res.status(500).send("Mail gönderilemedi.");
+    }
+});
+
+
 
 // KAYIT OLMA
 app.post('/kayit-et', async (req, res) => {
@@ -71,7 +108,9 @@ app.post('/sifre-hatirlat', async (req, res) => {
 
         const host = req.get('host');
         // KESİN ÇÖZÜM: Linki manuel kuruyoruz, Render'da hata payı sıfır
-        const resetLink = "https://" + host + "/sifre-yenileme.html?id=" + user._id.toString();
+       const resetLink = `${req.protocol}://${req.get('host')}/sifre-yenileme.html?id=${user._id}`;
+
+
 
         const mailOptions = {
             from: '"N3AG Destek" <n3ag.services@gmail.com>',
@@ -84,7 +123,11 @@ app.post('/sifre-hatirlat', async (req, res) => {
 
         await transporter.sendMail(mailOptions);
         res.send("<script>alert('Sıfırlama linki mailinize gönderildi!'); window.location.href='/index.html';</script>");
-    } catch (err) { res.status(500).send("Sunucu hatası."); }
+    } catch (err) {
+    console.error("MAIL GÖNDERME HATASI:", err);
+    res.status(500).send("Mail gönderilemedi.");
+}
+
 });
 
 // ŞİFREYİ GÜNCELLEME
