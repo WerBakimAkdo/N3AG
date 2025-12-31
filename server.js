@@ -45,10 +45,10 @@ app.post('/sifre-hatirlat', async (req, res) => {
 
         if (!user) return res.send("<script>alert('Kullanıcı bulunamadı!'); window.location.href='/index.html';</script>");
 
-        const host = req.get('host');
-        // Render için dinamik protokol (http/https)
-        const protocol = req.headers['x-forwarded-proto'] || 'http';
-        const resetLink = `https://${host}/sifre-yenile.html?id=${user._id.toString()}`;
+        // app.js içinde resetLink satırını tam olarak şununla değiştir:
+const host = req.get('host');
+const protocol = req.headers['x-forwarded-proto'] || 'https'; // Render için güvenli protokol
+const resetLink = `${protocol}://${host}/sifre-yenileme.html?id=${user._id.toString()}`;
 
         const mailOptions = {
             from: '"N3AG Destek" <n3ag.services@gmail.com>',
