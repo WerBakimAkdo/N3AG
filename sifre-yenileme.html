@@ -2,26 +2,34 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>N3AG - Şifre Yenileme</title>
+    <title>N3AG - Yeni Şifre Oluştur</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="login-panel">
-        <h2>Şifre Yenile</h2>
-        <form action="/sifre-sifirla" method="POST">
+        <h2>Yeni Şifre Belirle</h2>
+        <form action="/sifre-guncelle" method="POST">
+            <input type="hidden" name="userId" id="userIdInput">
+            
             <div class="input-group">
-                <input type="text" name="identifier" required>
-                <label>Kullanıcı Adı veya E-Posta</label>
-                <span class="input-line"></span>
-            </div>
-            <div class="input-group">
-                <input type="password" name="password" required>
+                <input type="password" name="newPassword" required>
                 <label>Yeni Şifre</label>
                 <span class="input-line"></span>
             </div>
             <button type="submit" class="login-button">Şifreyi Güncelle</button>
         </form>
-        <div class="register-link"><a href="index.html">Geri Dön</a></div>
     </div>
+
+    <script>
+        // URL'deki ?id=... kısmını bulur ve gizli inputa yerleştirir
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('id');
+        if (userId) {
+            document.getElementById('userIdInput').value = userId;
+        } else {
+            alert("Geçersiz bağlantı!");
+            window.location.href = "index.html";
+        }
+    </script>
 </body>
 </html>
