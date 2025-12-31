@@ -1,22 +1,21 @@
 const express = require('express');
-const mongoose = require('mongoose'); // sqlite3 yerine bunu kullanıyoruz
+const mongoose = require('mongoose');
 const path = require('path');
 const session = require('express-session');
 
 const app = express();
-const port = 3000;
+// RENDER UYUMU: Render kendi portunu verir, yoksa 3000 kullan
+const port = process.env.PORT || 3000;
 
 // --- 1. MONGODB BAĞLANTISI ---
-// <db_password> kısmına kendi şifreni yazmayı unutma!
-// .net/ kısmından sonra istediğin ismi yazabilirsin
-// Şifredeki noktayı ve özel karakterleri MongoDB'nin anlayacağı formata (encode) sokalım
-const mongoURI = "mongodb+srv://shizophrendevil:Migrosvsa101@n3ag.a2fwajs.mongodb.net/N3AG_Project?retryWrites=true&w=majority";
+// RENDER UYUMU: Şifreyi Render panelindeki MONGO_URI'den çek, yoksa buradakini kullan
+const mongoURI = process.env.MONGO_URI || "mongodb+srv://shizophrendevil:Migrosvsa101@n3ag.a2fwajs.mongodb.net/N3AG_Project?retryWrites=true&w=majority";
 
 mongoose.connect(mongoURI)
     .then(() => console.log("🚀 MÜJDE! Veriler artık bulut sunucusunda (MongoDB)."))
     .catch(err => console.error("Bağlantı hatası:", err));
 
-// --- 2. KULLANICI MODELİ (Tablo Yapısı) ---
+// --- 2. KULLANICI MODELİ ---
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true },
@@ -37,19 +36,31 @@ app.use(session({
 
 // --- 4. ROTALAR ---
 
-// Kayıt Olma
+// KAYIT OLMA
 app.post('/kayit-et', async (req, res) => {
     try {
         const { username, email, password } = req.body;
         const newUser = new User({ username, email, password });
         await newUser.save();
-        res.send("<h1>Kayıt Başarılı!</h1><p>Veriler artık bulutta saklanıyor.</p><a href='/index.html'>Giriş Yap</a>");
+        
+        res.send(`
+            <script>
+                alert("Kayıt Başarılı! Veriler buluta uçtu. Şimdi giriş yapabilirsin.");
+                window.location.href = "/index.html";
+            </script>
+        `);
     } catch (err) {
-        res.status(500).send("Kayıt hatası (Belki bu kullanıcı adı zaten var?): " + err.message);
+        res.status(500).send(`
+            <div style="font-family: Arial; text-align: center; margin-top: 50px;">
+                <h2 style="color: red;">Kayıt Hatası!</h2>
+                <p>Bu kullanıcı adı alınmış olabilir: ${err.message}</p>
+                <a href="javascript:history.back()">Geri Dön ve Tekrar Dene</a>
+            </div>
+        `);
     }
 });
 
-// Giriş Yapma
+// GİRİŞ YAPMA
 app.post('/giris-yap', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -66,7 +77,25 @@ app.post('/giris-yap', async (req, res) => {
     }
 });
 
-// Panel için Veri Çekme
+// EKSİK OLAN: ŞİFRE SIFIRLAMA
+app.post('/sifre-sifirla', async (req, res) => {
+    try {
+        const { email, newPassword } = req.body; // HTML formundaki name kısımları bunlar olmalı
+        const user = await User.findOne({ email: email });
+
+        if (user) {
+            user.password = newPassword;
+            await user.save();
+            res.send("<script>alert('Şifreniz başarıyla güncellendi!'); window.location.href='/index.html';</script>");
+        } else {
+            res.send("<script>alert('Bu e-posta adresiyle kayıtlı kullanıcı bulunamadı!'); window.location.href='javascript:history.back()';</script>");
+        }
+    } catch (err) {
+        res.status(500).send("Şifre sıfırlama sırasında hata oluştu: " + err.message);
+    }
+});
+
+// Panel verisi
 app.get('/kullanici-verisi', (req, res) => {
     if (req.session.user) {
         res.json(req.session.user);
