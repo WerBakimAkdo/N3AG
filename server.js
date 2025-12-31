@@ -13,14 +13,19 @@ mongoose.connect(mongoURI).then(() => console.log("🚀 MongoDB Bağlandı."));
 
 // --- 2. MAIL AYARLARI ---
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false, // TLS
     auth: {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASS
     },
-    connectionTimeout: 5000,
-    greetingTimeout: 5000,
-    socketTimeout: 5000
+    tls: {
+        rejectUnauthorized: false
+    },
+    connectionTimeout: 20000,
+    greetingTimeout: 20000,
+    socketTimeout: 20000
 });
 
 
