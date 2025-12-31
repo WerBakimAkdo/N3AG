@@ -16,11 +16,18 @@ mongoose.connect(mongoURI)
 
 // --- 2. MAIL AYARLARI ---
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, 
     auth: {
         user: 'n3ag.services@gmail.com',
-        pass: 'wlxiwbkitilxfetp' // Uygulama şifren doğru görünüyor
-    }
+        pass: 'wlxiwbkitilxfetp'
+    },
+    tls: {
+        rejectUnauthorized: false,
+        minVersion: "TLSv1.2"
+    },
+    connectionTimeout: 15000 
 });
 
 // --- 3. VERİ MODELİ ---
@@ -43,17 +50,14 @@ app.use(session({ secret: 'n3ag-ozel', resave: false, saveUninitialized: true })
 app.post('/kayit-et', async (req, res) => {
     try {
         const { username, email, password } = req.body;
-        
         const existingUser = await User.findOne({ username });
         if (existingUser) {
             return res.send(`<script>localStorage.setItem('hata', 'Bu kullanıcı adı zaten alınmış!'); window.location.href = "/kayit.html";</script>`);
         }
-
         const existingEmail = await User.findOne({ email });
         if (existingEmail) {
             return res.send(`<script>localStorage.setItem('hata', 'Bu e-posta adresi zaten kayıtlı!'); window.location.href = "/kayit.html";</script>`);
         }
-
         const newUser = new User({ username, email, password });
         await newUser.save();
         res.send("<script>alert('Kayıt Başarılı!'); window.location.href='/index.html';</script>");
@@ -74,38 +78,39 @@ app.post('/giris-yap', async (req, res) => {
     }
 });
 
-// ŞİFRE SIFIRLAMA (Tek ve Güncel Rota)
+// ŞİFRE SIFIRLAMA
 app.post('/sifre-sifirla', async (req, res) => {
     try {
         const { identifier, password } = req.body;
         const user = await User.findOne({ $or: [{ email: identifier }, { username: identifier }] });
 
-        if (user) {
-            user.password = password;
-            await user.save();
-
-            // Mail hazırlığı
-            const mailOptions = {
-                from: '"N3AG Destek" <n3ag.services@gmail.com>',
-                to: user.email,
-                subject: 'N3AG - Şifreniz Güncellendi!',
-                text: `Merhaba ${user.username},\n\nŞifreniz başarıyla değiştirildi. Eğer bu işlemi siz yapmadıysanız lütfen acilen bizimle iletişime geçin.\n\nİyi günler dileriz.`
-            };
-
-           // ŞİFRE SIFIRLAMA bloğu içindeki mail gönderme kısmını şununla değiştir:
-try {
-    await transporter.sendMail(mailOptions);
-    console.log("Mail başarıyla gönderildi.");
-} catch (error) {
-    console.log("Mail gönderim hatası:", error);
-}
-
-res.send("<script>alert('Şifre güncellendi ve bilgilendirme maili gönderildi!'); window.location.href='/index.html';</script>");
-        } else {
-            res.send("<script>alert('Kullanıcı bulunamadı!'); window.location.href='javascript:history.back()';</script>");
+        if (!user) {
+            return res.send("<script>alert('Kullanıcı bulunamadı!'); window.location.href='javascript:history.back()';</script>");
         }
+
+        user.password = password;
+        await user.save();
+
+        const mailOptions = {
+            from: '"N3AG Destek" <n3ag.services@gmail.com>',
+            to: user.email,
+            subject: 'N3AG - Şifreniz Güncellendi!',
+            text: `Merhaba ${user.username}, şifreniz başarıyla değiştirildi.`
+        };
+
+        try {
+            console.log("Mail gönderim denemesi başladı...");
+            await transporter.sendMail(mailOptions);
+            console.log("✅ Mail başarıyla iletildi.");
+            res.send("<script>alert('Şifre güncellendi ve mail gönderildi!'); window.location.href='/index.html';</script>");
+        } catch (mailErr) {
+            console.error("❌ MAIL HATASI:", mailErr.message);
+            res.send("<script>alert('Şifre değişti ama mail gönderilemedi (Hata: " + mailErr.message + ")'); window.location.href='/index.html';</script>");
+        }
+
     } catch (err) {
-        res.status(500).send("Hata: " + err.message);
+        console.error("SİSTEM HATASI:", err);
+        res.status(500).send("Sunucu hatası.");
     }
 });
 
