@@ -18,14 +18,13 @@ mongoose.connect(mongoURI)
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
-    secure: false, // 587 portu için false olmalı
+    secure: false,
     auth: {
         user: 'n3ag.services@gmail.com',
-        pass: 'wlxiwbkitilxfetp'
+        pass: 'wlxiwbkitilxfetp' // Not: Uygulama şifresi kullandığınızdan emin olun
     },
     tls: {
-        rejectUnauthorized: false,
-        minVersion: "TLSv1.2"
+        rejectUnauthorized: false
     }
 });
 
@@ -49,14 +48,6 @@ app.use(session({ secret: 'n3ag-ozel', resave: false, saveUninitialized: true })
 app.post('/kayit-et', async (req, res) => {
     try {
         const { username, email, password } = req.body;
-        const existingUser = await User.findOne({ username });
-        if (existingUser) {
-            return res.send(`<script>localStorage.setItem('hata', 'Bu kullanıcı adı zaten alınmış!'); window.location.href = "/kayit.html";</script>`);
-        }
-        const existingEmail = await User.findOne({ email });
-        if (existingEmail) {
-            return res.send(`<script>localStorage.setItem('hata', 'Bu e-posta adresi zaten kayıtlı!'); window.location.href = "/kayit.html";</script>`);
-        }
         const newUser = new User({ username, email, password });
         await newUser.save();
         res.send("<script>alert('Kayıt Başarılı!'); window.location.href='/index.html';</script>");
@@ -77,46 +68,50 @@ app.post('/giris-yap', async (req, res) => {
     }
 });
 
-// --- 5. ŞİFRE HATIRLATMA (GÜVENLİ VE MAİLLİ) ---
+// ŞİFRE SIFIRLAMA MAİLİ GÖNDERME
 app.post('/sifre-hatirlat', async (req, res) => {
     try {
-        const { identifier } = req.body; // Sadece mail veya kullanıcı adı alıyoruz
+        const { identifier } = req.body;
         const user = await User.findOne({ $or: [{ email: identifier }, { username: identifier }] });
 
         if (!user) {
             return res.send("<script>alert('Böyle bir kullanıcı bulunamadı!'); window.location.href='javascript:history.back()';</script>");
         }
 
+        // Kullanıcı ID'si ile sıfırlama linki oluşturma
+        const resetLink = `http://localhost:${port}/sifre-yenile.html?id=${user._id}`;
+
         const mailOptions = {
             from: '"N3AG Destek" <n3ag.services@gmail.com>',
             to: user.email,
-            subject: 'N3AG - Şifre Hatırlatma',
+            subject: 'N3AG - Şifre Sıfırlama',
             html: `
                 <h3>Merhaba ${user.username},</h3>
-                <p>Şifreni unuttuğunu duyduk. İşte güncel giriş bilgilerin:</p>
-                <p><b>Kullanıcı Adı:</b> ${user.username}</p>
-                <p><b>Şifre:</b> ${user.password}</p>
-                <br>
-                <p>Güvenliğin için bu bilgileri kimseyle paylaşma.</p>
+                <p>Şifreni sıfırlamak için aşağıdaki bağlantıya tıkla:</p>
+                <a href="${resetLink}">Şifremi Sıfırla</a>
             `
         };
 
-        try {
-            console.log("Şifre hatırlatma maili gönderiliyor...");
-            await transporter.sendMail(mailOptions);
-            res.send("<script>alert('Şifreniz kayıtlı e-posta adresinize gönderildi!'); window.location.href='/index.html';</script>");
-        } catch (mailErr) {
-            console.error("Mail Hatası:", mailErr.message);
-            res.send("<script>alert('Mail gönderilirken bir hata oluştu. Lütfen tekrar deneyin.'); window.location.href='javascript:history.back()';</script>");
-        }
+        await transporter.sendMail(mailOptions);
+        res.send("<script>alert('Sıfırlama linki mail adresinize gönderildi!'); window.location.href='/index.html';</script>");
 
     } catch (err) {
-        res.status(500).send("Sunucu hatası.");
+        console.error("Mail Hatası:", err);
+        res.status(500).send("İşlem sırasında bir hata oluştu.");
     }
 });
-app.get('/kullanici-verisi', (req, res) => {
-    if (req.session.user) res.json(req.session.user);
-    else res.status(401).send("Yetkisiz");
+
+// YENİ ŞİFREYİ KAYDETME
+app.post('/sifre-guncelle', async (req, res) => {
+    try {
+        const { userId, newPassword } = req.body;
+        if (!userId) return res.status(400).send("Geçersiz istek.");
+
+        await User.findByIdAndUpdate(userId, { password: newPassword });
+        res.send("<script>alert('Şifreniz güncellendi!'); window.location.href='/index.html';</script>");
+    } catch (err) {
+        res.status(500).send("Güncelleme hatası.");
+    }
 });
 
-app.listen(port, () => console.log(`Aktif port: ${port}`));
+app.listen(port, () => console.log(`Sunucu aktif: ${port}`));
