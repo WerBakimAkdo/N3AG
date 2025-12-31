@@ -38,33 +38,39 @@ app.use(session({ secret: 'n3ag-ozel', resave: false, saveUninitialized: true })
 // --- 5. ROTALAR ---
 
 // ŞİFRE SIFIRLAMA LİNKİ GÖNDERME
+// server.js içindeki /sifre-hatirlat rotasını bununla değiştir
 app.post('/sifre-hatirlat', async (req, res) => {
     try {
         const { identifier } = req.body;
         const user = await User.findOne({ $or: [{ email: identifier }, { username: identifier }] });
 
-        if (!user) return res.send("<script>alert('Kullanıcı bulunamadı!'); window.location.href='/index.html';</script>");
+        if (!user) {
+            return res.send("<script>alert('Böyle bir kullanıcı bulunamadı!'); window.location.href='/sifre-talebi.html';</script>");
+        }
 
-       // app.js içindeki ilgili kısmı bul ve değiştir
-const host = req.get('host');
-// Render'da https zorunlu olduğu için protokolü garantiye alalım
-const resetLink = `https://${host}/sifre-yenileme.html?id=${user._id.toString()}`;
-console.log("Giden Link:", resetLink); // Loglardan kontrol etmek için
+        const host = req.get('host');
+        // Render'da https üzerinden çalıştığımız için linki garantiye alıyoruz
+        const resetLink = `https://${host}/sifre-yenileme.html?id=${user._id.toString()}`;
 
         const mailOptions = {
             from: '"N3AG Destek" <n3ag.services@gmail.com>',
             to: user.email,
             subject: 'N3AG - Şifre Sıfırlama',
-            html: `<h3>Merhaba ${user.username},</h3>
-                   <p>Şifreni sıfırlamak için butona tıkla:</p>
-                   <a href="${resetLink}" style="background:#28a745;color:white;padding:10px;text-decoration:none;border-radius:5px;">Şifremi Sıfırla</a>`
+            html: `
+                <div style="background:#1a1a1a; color:white; padding:20px; border-radius:10px; font-family:sans-serif;">
+                    <h2>N3AG Şifre Yenileme</h2>
+                    <p>Merhaba ${user.username}, şifreni sıfırlamak için butona tıkla:</p>
+                    <a href="${resetLink}" style="background:#00f2fe; color:black; padding:10px 20px; text-decoration:none; border-radius:5px; font-weight:bold;">Şifremi Sıfırla</a>
+                </div>`
         };
 
         await transporter.sendMail(mailOptions);
-        res.send("<script>alert('Mail gönderildi!'); window.location.href='/index.html';</script>");
-    } catch (err) { res.status(500).send("Hata: " + err.message); }
+        res.send("<script>alert('Sıfırlama linki e-posta adresinize gönderildi!'); window.location.href='/index.html';</script>");
+    } catch (err) {
+        console.error("Mail Hatası:", err);
+        res.status(500).send("Sunucu hatası oluştu.");
+    }
 });
-
 // YENİ ŞİFREYİ KAYDETME
 app.post('/sifre-guncelle', async (req, res) => {
     try {
