@@ -42,41 +42,75 @@ app.use(session({ secret: 'n3ag-ozel', resave: false, saveUninitialized: true })
 
 // --- 5. ROTALAR ---
 
-// ŞİFRE SIFIRLAMA LİNKİ GÖNDERME
-app.post('/sifre-hatirlat', async (req, res) => {
+// ... (Başlangıçtaki bağlantı ve mail ayarları aynı kalacak)
+
+// --- ŞİFRE SIFIRLAMA LİNKİ GÖNDERME ---
+app.post('/send-reset-link', async (req, res) => {
     try {
         const { identifier } = req.body;
         const user = await User.findOne({ $or: [{ email: identifier }, { username: identifier }] });
 
         if (!user) {
-            return res.send("<script>alert('Böyle bir kullanıcı bulunamadı!'); window.location.href='javascript:history.back()';</script>");
+            return res.send("<script>alert('Böyle bir kullanıcı bulunamadı!'); window.location.href='/index.html';</script>");
         }
 
-        // Render ve Localhost'ta otomatik çalışan link yapısı
-        const protocol = req.headers['x-forwarded-proto'] || 'http';
         const host = req.get('host');
+        const protocol = req.headers['x-forwarded-proto'] || 'http';
+        // HTML dosya adının doğru olduğundan emin ol: sifre-yenile.html
         const resetLink = `${protocol}://${host}/sifre-yenile.html?id=${user._id}`;
 
         const mailOptions = {
             from: '"N3AG Destek" <n3ag.services@gmail.com>',
             to: user.email,
-            subject: 'N3AG - Şifre Sıfırlama Talebi',
+            subject: 'N3AG - Şifre Sıfırlama',
             html: `
-                <div style="font-family: sans-serif; border: 1px solid #eee; padding: 20px;">
-                    <h3>Merhaba ${user.username},</h3>
-                    <p>Şifrenizi sıfırlamak için aşağıdaki butona tıklayın:</p>
-                    <a href="${resetLink}" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Şifremi Sıfırla</a>
-                    <p>Eğer bu işlemi siz yapmadıysanız, lütfen bu e-postayı dikkate almayın.</p>
-                </div>
-            `
+                <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd;">
+                    <h2>Şifre Sıfırlama Talebi</h2>
+                    <p>Merhaba ${user.username}, şifrenizi sıfırlamak için aşağıdaki butona tıklayın:</p>
+                    <a href="${resetLink}" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Şifremi Sıfırla</a>
+                </div>`
         };
 
         await transporter.sendMail(mailOptions);
-        res.send("<script>alert('Sıfırlama linki e-posta adresinize gönderildi!'); window.location.href='/index.html';</script>");
-
+        res.send("<script>alert('Sıfırlama linki mailinize gönderildi!'); window.location.href='/index.html';</script>");
     } catch (err) {
-        console.error("Hata:", err);
-        res.status(500).send("Sunucu hatası.");
+        console.error("Mail hatası:", err);
+        res.status(500).send("Bir hata oluştu.");
+    }
+});
+
+// --- YENİ ŞİFREYİ VERİTABANINA KAYDETME ---
+app.post('/update-password', async (req, res) => {
+    try {
+        const { userId, newPassword } = req.body;
+        
+        if (!userId || !newPassword) {
+            return res.send("<script>alert('Geçersiz istek!'); window.location.href='/index.html';</script>");
+        }
+
+        await User.findByIdAndUpdate(userId, { password: newPassword });
+        res.send("<script>alert('Şifreniz güncellendi, şimdi giriş yapabilirsiniz.'); window.location.href='/index.html';</script>");
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Güncellenemedi.");
+    }
+});
+
+// KAYIT VE GİRİŞ ROTALARINI BURAYA EKLEMEYİ UNUTMA
+app.post('/kayit-et', async (req, res) => { /* senin eski kayıt kodun */ });
+app.post('/giris-yap', async (req, res) => { /* senin eski giriş kodun */ });
+
+app.listen(port, () => console.log(`Aktif port: ${port}`));
+
+
+// --- YENİ ŞİFREYİ VERİTABANINA KAYDETME ---
+app.post('/update-password', async (req, res) => {
+    try {
+        const { userId, newPassword } = req.body;
+        await User.findByIdAndUpdate(userId, { password: newPassword });
+        res.send("<script>alert('Şifreniz güncellendi, şimdi giriş yapabilirsiniz.'); window.location.href='/index.html';</script>");
+    } catch (err) {
+        res.status(500).send("Güncellenemedi.");
     }
 });
 

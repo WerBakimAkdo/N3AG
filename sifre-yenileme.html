@@ -7,29 +7,27 @@
 </head>
 <body>
     <div class="login-panel">
-        <h2>Yeni Şifre Belirle</h2>
-        <form action="/sifre-guncelle" method="POST">
-            <input type="hidden" name="userId" id="userIdInput">
-            
-            <div class="input-group">
-                <input type="password" name="newPassword" required>
-                <label>Yeni Şifre</label>
-                <span class="input-line"></span>
-            </div>
-            <button type="submit" class="login-button">Şifreyi Güncelle</button>
-        </form>
-    </div>
+    <h2>Yeni Şifre Belirle</h2>
+    <form action="/update-password" method="POST">
+        <input type="hidden" name="userId" id="userIdInput">
+        
+        <div class="input-group">
+            <input type="password" name="newPassword" placeholder="Yeni Şifreniz" required>
+        </div>
+        <button type="submit" class="login-button">Şifreyi Kaydet</button>
+    </form>
+</div>
 
-    <script>
-        // URL'deki ?id=... kısmını bulur ve gizli inputa yerleştirir
-        const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('id');
-        if (userId) {
-            document.getElementById('userIdInput').value = userId;
-        } else {
-            alert("Geçersiz bağlantı!");
-            window.location.href = "index.html";
-        }
-    </script>
+<script>
+    // URL'den ?id=12345 kısmını çekip input'a yerleştirir
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if (id) {
+        document.getElementById('userIdInput').value = id;
+    } else {
+        alert("Bağlantı geçersiz veya süresi dolmuş!");
+        window.location.href = "/index.html";
+    }
+</script>
 </body>
 </html>
