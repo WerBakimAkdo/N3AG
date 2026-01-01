@@ -58,34 +58,74 @@ app.post('/giris-yap', async (req, res) => {
 });
 
 // KAYIT OL
+// KAYIT OL
 app.post('/kayit-et', async (req, res) => {
     try {
         const { username, email, password } = req.body;
         const newUser = new User({ username, email, password });
         await newUser.save();
-        res.json({ success:true, redirect:'/index.html', message:'Kayıt başarılı!' });
+
+        // kayıt maili
+        const mailHTML = `
+        <div style="font-family: Arial, sans-serif; color:#222; padding:20px; background:#f4f4f4;">
+          <h2 style="color:#111;">N3AG Kayıt Başarılı</h2>
+          <p>Merhaba <strong>${username}</strong>,</p>
+          <p>Hesabın başarıyla oluşturuldu. Artık giriş yapabilirsin.</p>
+          <a href="${req.protocol}://${req.get('host')}/index.html" 
+             style="display:inline-block; padding:12px 24px; background:#1e90ff; color:white; text-decoration:none; border-radius:6px; margin-top:10px;">
+             Giriş Yap
+          </a>
+        </div>
+        `;
+
+        await transporter.sendMail({
+            from: '"N3AG Destek" <n3ag.services@gmail.com>',
+            to: email,
+            subject: 'N3AG - Kayıt Başarılı',
+            html: mailHTML
+        });
+
+        res.json({ success:true, redirect:'/index.html', message:'Kayıt başarılı! Mail adresine giriş linki gönderildi.' });
+
     } catch (err) {
         res.json({ success:false, message:'Kullanıcı adı veya e-posta kullanımda!' });
     }
 });
+
 
 // ŞİFRE HATIRLAT
 app.post('/sifre-hatirlat', async (req, res) => {
     try {
         const { identifier } = req.body;
         const user = await User.findOne({ $or:[ {email:identifier}, {username:identifier} ] });
+
         if(!user) return res.json({ success:false, message:'Kullanıcı bulunamadı!' });
 
         const resetLink = `${req.protocol}://${req.get('host')}/sifre-yenileme.html?id=${user._id}`;
+
+        const mailHTML = `
+        <div style="font-family: Arial, sans-serif; color:#222; padding:20px; background:#f4f4f4;">
+          <h2 style="color:#111;">N3AG Şifre Sıfırlama</h2>
+          <p>Merhaba <strong>${user.username}</strong>,</p>
+          <p>Şifreni sıfırlamak için aşağıdaki butona tıkla:</p>
+          <a href="${resetLink}" 
+             style="display:inline-block; padding:12px 24px; background:#1e90ff; color:white; text-decoration:none; border-radius:6px; margin-top:10px;">
+             Şifreyi Sıfırla
+          </a>
+          <p style="margin-top:20px; font-size:12px; color:#555;">
+            Eğer bu işlemi sen yapmadıysan, bu maili görmezden gel.
+          </p>
+        </div>
+        `;
 
         await transporter.sendMail({
             from: '"N3AG Destek" <n3ag.services@gmail.com>',
             to: user.email,
             subject: 'N3AG - Şifre Sıfırlama',
-            html: `<p>Şifre sıfırlamak için tıklayın:</p><a href="${resetLink}">${resetLink}</a>`
+            html: mailHTML
         });
 
-        res.json({ success:true, message:'Mail gönderildi!' });
+        res.json({ success:true, message:'Şifre sıfırlama maili gönderildi!' });
 
     } catch(err){
         console.error('❌ MAIL HATASI:', err);
