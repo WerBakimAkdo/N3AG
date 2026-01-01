@@ -13,19 +13,13 @@ mongoose.connect(mongoURI).then(() => console.log("🚀 MongoDB Bağlandı."));
 
 // --- 2. MAIL AYARLARI ---
 const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
+    host: "smtp-relay.brevo.com",
     port: 587,
-    secure: false, // TLS
+    secure: false,
     auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS
-    },
-    tls: {
-        rejectUnauthorized: false
-    },
-    connectionTimeout: 20000,
-    greetingTimeout: 20000,
-    socketTimeout: 20000
+        user: process.env.MAIL_USER, // apikey
+        pass: process.env.MAIL_PASS  // xsmtpsib-...
+    }
 });
 
 
@@ -68,11 +62,13 @@ app.post('/sifre-hatirlat', async (req, res) => {
         console.log("📨 Mail gönderiliyor...");
 
         await transporter.sendMail({
-            from: `"N3AG Destek" <${process.env.MAIL_USER}>`,
-            to: user.email,
-            subject: 'N3AG - Şifre Sıfırlama',
-            html: `<p>Şifre sıfırlamak için:</p><a href="${resetLink}">${resetLink}</a>`
-        });
+    from: '"N3AG Destek" <noreply@brevo.com>',
+    to: user.email,
+    subject: 'N3AG - Şifre Sıfırlama',
+    html: `<p>Şifre sıfırlamak için:</p>
+           <a href="${resetLink}">${resetLink}</a>`
+});
+
 
         console.log("✅ Mail gönderildi");
 
