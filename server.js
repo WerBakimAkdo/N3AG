@@ -22,6 +22,8 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+console.log("MAIL_USER:", process.env.MAIL_USER);
+console.log("MAIL_PASS var mı?:", !!process.env.MAIL_PASS);
 
 
 
