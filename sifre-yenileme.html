@@ -8,13 +8,16 @@
 <body>
     <div class="login-panel">
         <h2>Yeni Şifre Belirle</h2>
-        <form action="/sifre-guncelle" method="POST">
-            <input type="hidden" name="userId" id="userIdInput">
-            <div class="input-group">
-                <input type="password" name="newPassword" placeholder="Yeni Şifreniz" required>
-            </div>
-            <button type="submit" class="login-button">Şifreyi Kaydet</button>
-        </form>
+       <form action="/sifre-guncelle" method="POST">
+    <input type="hidden" name="userId" id="userIdInput">
+
+    <div class="input-group">
+        <input type="password" name="newPassword" required>
+    </div>
+
+    <button type="submit">Şifreyi Kaydet</button>
+</form>
+
     </div>
 
     <script>

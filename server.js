@@ -112,12 +112,24 @@ app.post('/giris-yap', async (req, res) => {
 // ŞİFREYİ GÜNCELLEME
 app.post('/sifre-guncelle', async (req, res) => {
     try {
+        console.log("📥 GELEN BODY:", req.body);
+
         const { userId, newPassword } = req.body;
-        if (!userId) return res.send("Hata: Kullanıcı ID bulunamadı.");
-        
+
+        if (!userId || !newPassword) {
+            return res.send("❌ userId veya newPassword gelmedi");
+        }
+
         await User.findByIdAndUpdate(userId, { password: newPassword });
-        res.send("<script>alert('Şifreniz güncellendi!'); window.location.href='/index.html';</script>");
-    } catch (err) { res.status(500).send("Güncelleme hatası."); }
+
+        console.log("✅ ŞİFRE GÜNCELLENDİ:", userId);
+
+        res.send("<script>alert('Şifre güncellendi!'); window.location.href='/index.html';</script>");
+    } catch (err) {
+        console.error("❌ GÜNCELLEME HATASI:", err);
+        res.status(500).send("Hata");
+    }
 });
+
 
 app.listen(port, () => console.log(`🚀 Sunucu ${port} portunda aktif.`));
