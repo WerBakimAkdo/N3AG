@@ -2,36 +2,39 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Şifre Yenileme - N3AG</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+<title>Şifre Yenile</title>
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;margin:0;padding:0;background:#000;color:white;display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;}
-.card{background:rgba(255,255,255,0.02);backdrop-filter:blur(40px);border-radius:28px;padding:32px;width:360px;box-shadow:0 30px 80px rgba(0,0,0,.25);position:relative;}
-.card::before{content:"";position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(60deg, rgba(255,255,255,0.1) 0%,rgba(255,255,255,0) 50%,rgba(255,255,255,0.1) 100%);transform:rotate(25deg);animation: shimmer 6s infinite linear;pointer-events:none;}
-h2{text-align:center;margin-bottom:24px;}
-input{width:100%;padding:14px 16px;margin-bottom:14px;border-radius:20px;background:transparent;backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,0.05);color:white;outline:none;}
-button{width:100%;padding:16px;border-radius:24px;background:transparent;backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,0.05);color:white;font-weight:600;cursor:pointer;}
+body{display:flex;justify-content:center;align-items:center;height:100vh;background:#111;color:white;font-family:sans-serif;}
+.container{background:#222;padding:30px;border-radius:20px;box-shadow:0 0 20px rgba(0,0,0,.5);}
+input,button{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:none;}
+button{background:#4caf50;color:white;font-weight:bold;cursor:pointer;}
+button:hover{background:#45a049;}
 </style>
 </head>
 <body>
-<div class="card">
+<div class="container">
 <h2>Yeni Şifre Belirle</h2>
-<input type="password" id="newPass" placeholder="Yeni Şifre">
-<button id="savePass">Kaydet</button>
+<input type="hidden" id="userId" value="">
+<input type="password" id="newPassword" placeholder="Yeni Şifre">
+<button onclick="updatePassword()">Güncelle</button>
+<p id="msg"></p>
 </div>
-
 <script>
-const urlParams = new URLSearchParams(window.location.search);
-const userId = urlParams.get('id');
+const params = new URLSearchParams(window.location.search);
+document.getElementById('userId').value = params.get('id');
 
-document.getElementById('savePass').addEventListener('click', async ()=>{
-  const newPassword = document.getElementById('newPass').value.trim();
-  if(!newPassword){alert('Şifre boş olamaz!');return;}
-  const res = await fetch('/sifre-guncelle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId,newPassword})});
-  const text = await res.text();
-  alert(text);
-});
+async function updatePassword(){
+  const userId = document.getElementById('userId').value;
+  const newPassword = document.getElementById('newPassword').value;
+  const res = await fetch('/sifre-guncelle',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ userId,newPassword })
+  });
+  const result = await res.json();
+  document.getElementById('msg').innerText = result.message;
+  if(result.success && result.redirect) setTimeout(()=>window.location.href=result.redirect,1500);
+}
 </script>
 </body>
 </html>

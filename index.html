@@ -6,56 +6,60 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
 <style>
-* { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; margin:0; padding:0; }
-body { height:100vh; display:flex; justify-content:center; align-items:center; background:#000; color:white; position:relative; overflow:hidden;}
-.light-overlay { position:absolute; top:-50%; left:-50%; width:200%; height:200%; background: radial-gradient(circle, rgba(255,255,255,0.15), transparent 60%); filter: blur(120px); animation: moveLight 10s infinite alternate ease-in-out; z-index:0;}
-@keyframes moveLight { 0%{ transform: translateX(0) translateY(0); } 50%{ transform: translateX(40px) translateY(20px); } 100%{ transform: translateX(-40px) translateY(-20px); } }
-.card { width:360px; padding:32px; border-radius:28px; background: rgba(255,255,255,0.02); backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%); border:1px solid rgba(255,255,255,0.05); box-shadow:0 30px 80px rgba(0,0,0,.25); position:relative; z-index:2; overflow:hidden;}
-.card::before { content:""; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background: linear-gradient(60deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.1) 100%); transform: rotate(25deg); animation: shimmer 6s infinite linear; pointer-events:none; }
-.logo { font-family: 'Orbitron', sans-serif; font-weight:700; font-size:42px; letter-spacing:6px; text-align:center; margin-bottom:30px; color:white; text-shadow:0 0 10px rgba(255,255,255,0.4),0 0 20px rgba(255,255,255,0.2); animation: blinkGlow 2.5s infinite ease-in-out; }
-@keyframes blinkGlow { 0%,100%{opacity:1;text-shadow:0 0 10px rgba(255,255,255,0.4),0 0 20px rgba(255,255,255,0.2);} 50%{opacity:0.3;text-shadow:0 0 20px rgba(255,255,255,0.6),0 0 30px rgba(255,255,255,0.3);} }
-form { display:none; } form.active { display:block; }
-input { width:100%; padding:14px 16px; margin-bottom:14px; border-radius:20px; background:transparent; backdrop-filter:blur(30px) saturate(180%); -webkit-backdrop-filter:blur(30px) saturate(180%); border:1px solid rgba(255,255,255,0.05); color:white; outline:none; position:relative; overflow:hidden; transition:.35s ease;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;}
+body{height:100vh;display:flex;justify-content:center;align-items:center;background:#000;color:white;overflow:hidden;position:relative;}
+.light-overlay{position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle, rgba(255,255,255,0.15), transparent 60%);filter:blur(120px);animation:moveLight 10s infinite alternate ease-in-out;z-index:0;}
+@keyframes moveLight{0%{transform:translateX(0) translateY(0);}50%{transform:translateX(40px) translateY(20px);}100%{transform:translateX(-40px) translateY(-20px);}}
+.card{width:360px;padding:32px;border-radius:28px;background: rgba(255,255,255,0.02);backdrop-filter: blur(40px) saturate(200%);-webkit-backdrop-filter: blur(40px) saturate(200%);border: 1px solid rgba(255,255,255,0.05);box-shadow:0 30px 80px rgba(0,0,0,.25);position:relative;z-index:2;overflow:hidden;}
+.card::before{content:"";position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(60deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.1) 100%);transform:rotate(25deg);animation:shimmer 6s infinite linear;pointer-events:none;}
+.logo{font-family:'Orbitron',sans-serif;font-weight:700;font-size:42px;letter-spacing:6px;text-align:center;margin-bottom:30px;color:white;text-shadow:0 0 10px rgba(255,255,255,0.4),0 0 20px rgba(255,255,255,0.2);animation:blinkGlow 2.5s infinite ease-in-out;}
+@keyframes blinkGlow{0%,100%{opacity:1;text-shadow:0 0 10px rgba(255,255,255,0.4),0 0 20px rgba(255,255,255,0.2);}50%{opacity:0.3;text-shadow:0 0 20px rgba(255,255,255,0.6),0 0 30px rgba(255,255,255,0.3);}}
+form{display:none;}
+form.active{display:block;}
+input{width:100%;padding:14px 16px;margin-bottom:14px;border-radius:20px;background:transparent;backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);border:1px solid rgba(255,255,255,0.05);color:white;outline:none;position:relative;overflow:hidden;transition:.35s ease;}
 input::placeholder{color:rgba(255,255,255,0.5);}
-input:focus{border-color: rgba(255,255,255,0.15); box-shadow:0 0 25px rgba(255,255,255,0.08);}
-button { width:100%; padding:16px; border-radius:24px; background:transparent; backdrop-filter:blur(30px) saturate(180%); border:1px solid rgba(255,255,255,0.05); color:white; font-weight:600; font-size:16px; cursor:pointer; box-shadow:inset 0 0 1px rgba(255,255,255,0.3); position:relative; overflow:hidden; transition:all 0.35s ease;}
-button::before { content:""; position:absolute; top:0; left:-50%; width:200%; height:100%; background: linear-gradient(120deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.15) 100%); transform:rotate(20deg); animation: buttonShimmer 4s infinite linear; pointer-events:none;}
-@keyframes buttonShimmer { 0%{transform:translateX(-100%) rotate(20deg);} 100%{transform:translateX(100%) rotate(20deg);} }
-.links{ text-align:center; margin-top:14px; font-size:14px; opacity:.85; }
-.links span{cursor:pointer; text-decoration:underline;}
-.forgot{ text-align:right; font-size:13px; margin-bottom:14px; opacity:.75; cursor:pointer;}
+input:focus{border-color:rgba(255,255,255,0.15);box-shadow:0 0 25px rgba(255,255,255,0.08);}
+button{width:100%;padding:16px;border-radius:24px;background:transparent;backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);border:1px solid rgba(255,255,255,0.05);color:white;font-weight:600;font-size:16px;cursor:pointer;position:relative;overflow:hidden;transition: all 0.35s ease;box-shadow: inset 0 0 1px rgba(255,255,255,0.3);}
+button::before{content:"";position:absolute;top:0;left:-50%;width:200%;height:100%;background:linear-gradient(120deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.15) 100%);transform:rotate(20deg);animation:buttonShimmer 4s infinite linear;pointer-events:none;}
+@keyframes buttonShimmer{0%{transform:translateX(-100%) rotate(20deg);}100%{transform:translateX(100%) rotate(20deg);}}
+button:hover{transform:translateY(-1px);box-shadow: inset 0 0 1px rgba(255,255,255,0.5);}
+button:active{transform:scale(0.97);}
+.links{text-align:center;margin-top:14px;font-size:14px;opacity:.85;}
+.links span{cursor:pointer;text-decoration:underline;}
+.forgot{text-align:right;font-size:13px;margin-bottom:14px;opacity:.75;cursor:pointer;}
 </style>
 </head>
 <body>
 
 <div class="light-overlay"></div>
+
 <div class="card">
-  <div class="logo">N3AG</div>
+<div class="logo">N3AG</div>
 
-  <!-- LOGIN -->
-  <form id="loginForm" class="active">
-    <input name="username" placeholder="Kullanıcı adı" required>
-    <input name="password" type="password" placeholder="Şifre" required>
-    <div class="forgot" onclick="showForgot()">Şifremi unuttum</div>
-    <button type="submit">Giriş Yap</button>
-    <div class="links">Hesabın yok mu? <span onclick="switchForm()">Kayıt ol</span></div>
-  </form>
+<!-- LOGIN -->
+<form id="loginForm" class="active">
+<input name="username" placeholder="Kullanıcı adı" required>
+<input name="password" type="password" placeholder="Şifre" required>
+<div class="forgot" onclick="showForgot()">Şifremi unuttum</div>
+<button type="submit">Giriş Yap</button>
+<div class="links">Hesabın yok mu? <span onclick="switchForm()">Kayıt ol</span></div>
+</form>
 
-  <!-- REGISTER -->
-  <form id="registerForm">
-    <input name="username" placeholder="Kullanıcı adı" required>
-    <input name="email" placeholder="E-posta" required>
-    <input name="password" type="password" placeholder="Şifre" required>
-    <button type="submit">Kayıt Ol</button>
-    <div class="links"><span onclick="switchForm()">Girişe dön</span></div>
-  </form>
+<!-- REGISTER -->
+<form id="registerForm">
+<input name="username" placeholder="Kullanıcı adı" required>
+<input name="email" placeholder="E-posta" required>
+<input name="password" type="password" placeholder="Şifre" required>
+<button type="submit">Kayıt Ol</button>
+<div class="links"><span onclick="switchForm()">Girişe dön</span></div>
+</form>
 
-  <!-- FORGOT -->
-  <form id="forgotForm">
-    <input name="identifier" placeholder="E-posta veya kullanıcı adı" required>
-    <button type="submit">Sıfırlama Linki Gönder</button>
-    <div class="links"><span onclick="backLogin()">Geri dön</span></div>
-  </form>
+<!-- FORGOT -->
+<form id="forgotForm">
+<input name="identifier" placeholder="E-posta veya kullanıcı adı" required>
+<button type="submit">Sıfırlama Linki Gönder</button>
+<div class="links"><span onclick="backLogin()">Geri dön</span></div>
+</form>
 </div>
 
 <script>
@@ -63,36 +67,46 @@ const login = document.getElementById("loginForm");
 const register = document.getElementById("registerForm");
 const forgot = document.getElementById("forgotForm");
 
-function switchForm(){login.classList.toggle("active");register.classList.toggle("active");}
-function showForgot(){login.classList.remove("active");forgot.classList.add("active");}
-function backLogin(){forgot.classList.remove("active");login.classList.add("active");}
+function switchForm(){
+login.classList.toggle("active");
+register.classList.toggle("active");
+}
+function showForgot(){
+login.classList.remove("active");
+forgot.classList.add("active");
+}
+function backLogin(){
+forgot.classList.remove("active");
+login.classList.add("active");
+}
 
-// AJAX
+// AJAX SUBMITS
 login.addEventListener('submit', async e=>{
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(login));
-  const res = await fetch('/giris-yap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  const r = await res.json();
-  if(r.success) window.location.href = r.redirect;
-  else alert(r.message);
+e.preventDefault();
+const data = Object.fromEntries(new FormData(login));
+const res = await fetch('/giris-yap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+const result = await res.json();
+if(result.success && result.redirect) window.location.href=result.redirect;
+else alert(result.message);
 });
 
 register.addEventListener('submit', async e=>{
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(register));
-  const res = await fetch('/kayit-et',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  const r = await res.json();
-  if(r.success) window.location.href = r.redirect;
-  else alert(r.message);
+e.preventDefault();
+const data = Object.fromEntries(new FormData(register));
+const res = await fetch('/kayit-et',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+const result = await res.json();
+alert(result.message);
+if(result.success && result.redirect) window.location.href=result.redirect;
 });
 
 forgot.addEventListener('submit', async e=>{
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(forgot));
-  const res = await fetch('/sifre-hatirlat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  const r = await res.json();
-  alert(r.message);
+e.preventDefault();
+const data = Object.fromEntries(new FormData(forgot));
+const res = await fetch('/sifre-hatirlat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+const result = await res.json();
+alert(result.message);
 });
 </script>
+
 </body>
 </html>

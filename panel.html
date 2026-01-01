@@ -1,61 +1,9 @@
 <!DOCTYPE html>
 <html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>N3AG - Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        .dashboard-container {
-            text-align: center;
-            padding: 40px;
-            background: rgba(20, 20, 20, 0.95);
-            border-radius: 15px;
-            border: 1px solid #333;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-        }
-        .user-icon {
-            font-size: 50px;
-            margin-bottom: 20px;
-        }
-        .logout-btn {
-            margin-top: 30px;
-            background: #ff4b2b;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .logout-btn:hover { background: #ff416c; }
-    </style>
-</head>
+<head><meta charset="UTF-8"><title>Panel</title></head>
 <body>
-    <div class="logo-section">
-        <h1 class="n3ag-logo">N3AG</h1>
-    </div>
-
-    <div class="dashboard-container">
-        <div class="user-icon">👤</div>
-        <h2>Sisteme Başarıyla Giriş Yaptın!</h2>
-        <p>Burası sana özel kullanıcı panelidir.</p>
-        
-        <div style="margin-top: 20px; text-align: left; background: #222; padding: 15px; border-radius: 8px;">
-            <p><strong>Durum:</strong> Aktif</p>
-            <p><strong>Yetki:</strong> Kullanıcı</p>
-        </div>
-
-        <button onclick="location.href='index.html'" class="logout-btn">Güvenli Çıkış</button>
-    </div>
-    <script>
-    fetch('/kullanici-verisi')
-        .then(res => res.json())
-        .then(user => {
-            document.querySelector('h2').innerText = "Hoş geldin, " + user.username + "!";
-        })
-        .catch(() => window.location.href = "/index.html"); // Giriş yapmamışsa atar
-</script>
+<h1>Hoşgeldin!</h1>
+<p>Panel sayfasına giriş yaptınız.</p>
+<a href="/index.html">Çıkış</a>
 </body>
-
 </html>
