@@ -14,13 +14,14 @@ mongoose.connect(mongoURI).then(() => console.log("🚀 MongoDB Bağlandı."));
 // --- 2. MAIL AYARLARI ---
 const transporter = nodemailer.createTransport({
     host: "smtp-relay.brevo.com",
-    port: 587,
+    port: 2525,   // 🔥 BURASI
     secure: false,
     auth: {
-        user: process.env.MAIL_USER, // apikey
-        pass: process.env.MAIL_PASS  // xsmtpsib-...
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS
     }
 });
+
 
 console.log("MAIL_USER:", process.env.MAIL_USER);
 console.log("MAIL_PASS var mı?:", !!process.env.MAIL_PASS);
