@@ -118,12 +118,16 @@ app.post('/sifre-hatirlat', async (req, res) => {
         </div>
         `;
 
-        await transporter.sendMail({
-            from: '"N3AG Destek" <n3ag.services@gmail.com>',
-            to: user.email,
-            subject: 'N3AG - Şifre Sıfırlama',
-            html: mailHTML
-        });
+       const info = await transporter.sendMail({
+  from: '"N3AG Destek" <n3ag.services@gmail.com>',
+  to: user.email,
+  subject: 'N3AG - Şifre Sıfırlama',
+  html: `<p>Merhaba <b>${user.username}</b>,</p>
+         <p>Şifre sıfırlamak için aşağıdaki linke tıkla:</p>
+         <a href="${resetLink}" style="color:#8f9bff;text-decoration:none;">Şifreyi Sıfırla</a>`
+});
+res.json({ success:true, message:'Mail gönderildi!' });
+
 
         res.json({ success:true, message:'Şifre sıfırlama maili gönderildi!' });
 
