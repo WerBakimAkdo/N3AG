@@ -64,16 +64,16 @@ app.post('/sifre-hatirlat', async (req, res) => {
 
         console.log("📨 Mail gönderiliyor...");
 
-        await transporter.sendMail({
-    from: '"N3AG Destek" <noreply@brevo.com>',
+  const info = await transporter.sendMail({
+    from: '"N3AG Destek" <n3ag.services@gmail.com>',
     to: user.email,
     subject: 'N3AG - Şifre Sıfırlama',
     html: `<p>Şifre sıfırlamak için:</p>
            <a href="${resetLink}">${resetLink}</a>`
 });
 
+console.log("📬 MAIL INFO:", info);
 
-        console.log("✅ Mail gönderildi");
 
         res.send("<script>alert('Mail gönderildi!'); window.location.href='/index.html';</script>");
 
