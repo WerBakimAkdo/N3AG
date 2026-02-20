@@ -44,18 +44,26 @@ const User = mongoose.model('User', new mongoose.Schema({
 }));
 
 /* =======================
-   AKTİF KULLANICI TAKİBİ
+   AKTİF KULLANICI TAKİBİ (Daha Sağlam)
 ======================= */
-let activeUsers = new Set();
+let activeUsers = new Map();
+
+// Her 30 saniyede bir pasifleri temizleyen otomatik temizlikçi
+setInterval(() => {
+    const now = Date.now();
+    for (let [id, lastSeen] of activeUsers) {
+        if (now - lastSeen > 45000) activeUsers.delete(id); // 45 sn ses çıkmayanı sil
+    }
+}, 10000);
+
 app.get('/api/ping', (req, res) => {
-    activeUsers.add(req.sessionID);
-    res.json({ success: true });
+    activeUsers.set(req.sessionID, Date.now());
+    res.json({ success: true, count: activeUsers.size });
 });
+
 app.get('/api/active-users', (req, res) => {
     res.json({ count: activeUsers.size });
 });
-setInterval(() => { activeUsers.clear(); }, 120000);
-
 /* =======================
    KAYIT / GİRİŞ (ESKİ VE SAĞLAM)
 ======================= */

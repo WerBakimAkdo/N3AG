@@ -476,16 +476,20 @@
         // --- 2. LOGIC ---
         function init() {
             setTimeout(() => {
-                document.getElementById('loadingScreen').style.opacity = 0;
-                setTimeout(() => document.getElementById('loadingScreen').style.display = 'none', 1000);
-            }, 2500); // 2.5 sn intro
+                const loader = document.getElementById('loadingScreen');
+                if(loader) {
+                    loader.style.opacity = 0;
+                    setTimeout(() => loader.style.display = 'none', 1000);
+                }
+            }, 2500);
 
             renderGrid(database);
-            fetchUserData(); // Profil verisi çek
+            fetchUserData();
         }
 
         function renderGrid(data) {
             const grid = document.getElementById('appGrid');
+            if(!grid) return;
             grid.innerHTML = "";
             data.forEach(app => {
                 const isSelected = cart.find(x => x.id === app.id) ? 'selected' : '';
@@ -501,7 +505,6 @@
         function filterCat(cat, btn) {
             document.querySelectorAll('.cat-item').forEach(x => x.classList.remove('active'));
             btn.classList.add('active');
-            
             if(cat === 'all') renderGrid(database);
             else renderGrid(database.filter(x => x.cat === cat));
         }
@@ -514,18 +517,17 @@
         function toggleCart(id) {
             const item = database.find(x => x.id === id);
             const idx = cart.findIndex(x => x.id === id);
-            
             if(idx > -1) cart.splice(idx, 1);
             else cart.push(item);
             
-            renderGrid(document.querySelector('.cat-item.active').innerText.includes('Hepsi') ? database : database.filter(x => x.cat === database.find(y => y.id === id).cat));
             updateCartUI();
+            renderGrid(database); 
         }
 
         function updateCartUI() {
             const list = document.getElementById('cartList');
+            if(!list) return;
             list.innerHTML = "";
-            
             cart.forEach(item => {
                 list.innerHTML += `
                     <div class="cart-item">
@@ -534,97 +536,76 @@
                     </div>
                 `;
             });
-            
             if(cart.length === 0) list.innerHTML = '<div style="text-align:center; color:#555; margin-top:50px; font-size:12px;">Henüz seçim yapılmadı.</div>';
         }
 
-function updateLiveUsers() {
-    const base = 140; // Temel kullanıcı sayısı
-    const random = Math.floor(Math.random() * 20); // 0-20 arası değişim
-    document.getElementById('userCount').innerText = base + random;
-}
-
-// Her 5 saniyede bir güncelle
-setInterval(updateLiveUsers, 5000);
-updateLiveUsers(); // Sayfa açılınca çalıştır
-
-        // --- 3. THE SCRIPT GENERATOR (DETAYLI OPTİMİZASYON) ---
-       
-function downloadScript() {
+        // --- 3. THE SCRIPT GENERATOR ---
+       function downloadScript() {
     if(cart.length === 0) return showToast("Lütfen en az 1 uygulama seçin!");
 
-    const isOptimized = document.getElementById('fpsBoost').checked;
-    let idsForPS = cart.map(a => "'" + a.id + "'").join(',');
+    const isOptimized = document.getElementById('fpsBoost')?.checked;
     const nl = "\r\n";
+    let idsForPS = cart.map(a => "'" + a.id + "'").join(',');
     
-    let optScript = "";
-    if (isOptimized) {
-        optScript = 
-            `echo [ADIM 1] Oyun Modu Aktif Ediliyor...${nl}` +
-            `powershell -Command "Set-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\GameBar' -Name 'AllowAutoGameMode' -Value 1" >nul${nl}` +
-            `echo [+] Oyun modu aktif edildi.${nl}echo.${nl}` +
-            
-            `echo [ADIM 2] Sistem Debloat Islemi Baslatiliyor...${nl}` +
-            `echo [!] Gereksiz Windows paketleri temizleniyor (Zararsiz mod)...${nl}` +
-            `powershell -Command "Get-AppxPackage *3dbuilder* | Remove-AppxPackage" >nul${nl}` +
-            `powershell -Command "Get-AppxPackage *feedbackhub* | Remove-AppxPackage" >nul${nl}` +
-            `echo [+] Temizlik tamamlandi.${nl}echo.${nl}` +
-            
-            `echo [ADIM 3] Odaklanma Yardimi Kapatiliyor...${nl}` +
-            `powershell -Command "Set-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings' -Name 'NOC_GLOBAL_SETTING_TOASTS_ENABLED' -Value 0" >nul${nl}` +
-            `echo [+] Odaklanma yardimi kapatildi.${nl}echo.${nl}` +
-            
-            `echo [ADIM 4] Yuksek Performans Guc Plani Ayarlaniyor...${nl}` +
-            `powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c >nul${nl}` +
-            `echo [+] Guc plani: Yuksek Performans.${nl}echo.${nl}` +
-            `echo --------------------------------------------------${nl}` +
-            `echo [!] OPTIMIZASYON BITTI. UYGULAMALAR KURULUYOR...${nl}` +
-            `echo --------------------------------------------------${nl}echo.${nl}`;
-    }
-
-    let psLoop = `$apps = @(${idsForPS}); foreach ($app in $apps) { Write-Host "--- Kuruluyor: $app ---" -ForegroundColor Yellow; winget install --id $app --exact --accept-source-agreements --accept-package-agreements --silent; }`;
-
     let script = "@echo off" + nl +
-        "title N3AG - Kurulum ve Optimizasyon" + nl +
+        "title N3AG - Sistem Yapilandirici" + nl +
+        "mode con: cols=80 lines=25" + nl +
+        "color 0B" + nl + // Turkuaz renk
         "chcp 65001 >nul" + nl +
         "cls" + nl +
-        "echo --------------------------------------------------" + nl +
-        "echo       N 3 A G   -   PERFORMANS SIHIRBAZI" + nl +
-        "echo --------------------------------------------------" + nl +
-        "echo." + nl +
-        optScript + // Optimizasyon kodları buraya enjekte ediliyor
-        "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Write-Host 'Kurulum Basladi...' -ForegroundColor Cyan; " + psLoop + " Write-Host 'Tum Islemler Bitti!' -ForegroundColor Green\"" + nl +
-        "echo." + nl +
         "echo ==================================================" + nl +
-        "echo    [TAMAMLANDI] Islem Basariyla Bitirdi." + nl +
+        "echo           N 3 A G   H I Z L A N D I R I C I" + nl +
         "echo ==================================================" + nl +
-        "pause";
+        "echo." + nl;
+
+    if (isOptimized) {
+        script += 
+            `echo [1/4] Oyun Modu Ayarlaniyor...${nl}` +
+            `powershell -Command "Set-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\GameBar' -Name 'AllowAutoGameMode' -Value 1" >nul${nl}` +
+            `echo [+] TAMAMLANDI.${nl}echo.${nl}` +
+            
+            `echo [2/4] Gereksiz Windows Paketleri Temizleniyor...${nl}` +
+            `powershell -Command "Get-AppxPackage *3dbuilder* | Remove-AppxPackage" >nul${nl}` +
+            `powershell -Command "Get-AppxPackage *feedbackhub* | Remove-AppxPackage" >nul${nl}` +
+            `echo [+] TAMAMLANDI.${nl}echo.${nl}` +
+            
+            `echo [3/4] Bildirimler ve Arkaplan Kisitlamalari...${nl}` +
+            `powershell -Command "Set-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings' -Name 'NOC_GLOBAL_SETTING_TOASTS_ENABLED' -Value 0" >nul${nl}` +
+            `echo [+] TAMAMLANDI.${nl}echo.${nl}` +
+            
+            `echo [4/4] Yuksek Performans Modu Aktif Ediliyor...${nl}` +
+            `powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c >nul${nl}` +
+            `echo [+] TAMAMLANDI.${nl}echo.${nl}` +
+            `echo --------------------------------------------------${nl}`;
+    }
+
+    script += 
+        `echo [!] UYGULAMALAR KURULUYOR...${nl}` +
+        `powershell -NoProfile -ExecutionPolicy Bypass -Command "foreach($app in @(${idsForPS})){ Write-Host '>> Kuruluyor: ' $app -ForegroundColor Cyan; winget install --id $app --exact --accept-source-agreements --silent; }"` + nl +
+        `echo.${nl}` +
+        `echo ==================================================${nl}` +
+        `echo    ISLEM BASARIYLA BITTI! BILGISAYARINIZ HAZIR.${nl}` +
+        `echo ==================================================${nl}` +
+        `pause`;
 
     const blob = new Blob([script], { type: "application/octet-stream" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "N3AG_Hizlandirici.bat";
+    a.download = "N3AG_Setup.bat";
     a.click();
 }
-
-
-
-
 
         // --- 4. PROFILE & SYSTEM ---
         function setTheme(theme) {
             document.body.className = theme;
-            showToast("Tema Değiştirildi: " + theme.replace('theme-', '').toUpperCase());
+            showToast("Tema Değiştirildi!");
         }
 
         function showToast(msg) {
             const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
+            if(t) { t.innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
         }
 
-        // Profile Logic (Real Data Fetch)
         async function fetchUserData() {
             try {
                 const res = await fetch('/api/user-info');
@@ -632,95 +613,45 @@ function downloadScript() {
                 if(data.success) {
                     document.getElementById('pUsername').value = data.user.username;
                     document.getElementById('pSideName').innerText = data.user.username;
-                    document.getElementById('pEmail').value = data.user.email || "";
                 }
-            } catch(e) { console.log("Dev Mode: API çalışmıyor."); }
+            } catch(e) { console.log("Profil verisi çekilemedi."); }
         }
 
-        function openProfile() { document.getElementById('profileModal').style.display = 'flex'; }
-        function closeProfile() { document.getElementById('profileModal').style.display = 'none'; }
-        
-        function switchTab(tabId) {
-            document.querySelectorAll('.p-content').forEach(x => x.style.display = 'none');
-            document.getElementById('tab-' + tabId).style.display = 'block';
-            document.querySelectorAll('.p-btn').forEach(x => x.classList.remove('active'));
-            event.target.classList.add('active');
-        }
-
-        function saveProfile() {
-            showToast("Profil Bilgileri Güncellendi!");
-        }
-
-        async function changePassword() {
-            const oldP = document.getElementById('oldPass').value;
-            const newP = document.getElementById('newPass').value;
-            
-            if(!oldP || !newP) return showToast("Lütfen alanları doldur!");
-
-            try {
-                const res = await fetch('/api/update-password', {
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({oldPassword: oldP, newPassword: newP})
-                });
-                const data = await res.json();
-                showToast(data.message);
-                if(data.success) document.querySelectorAll('.p-input').forEach(i => i.value = '');
-            } catch(e) {
-                showToast("Sunucu Hatası!");
+        setTimeout(() => {
+            const speedStat = document.getElementById('speedStat');
+            if(speedStat) {
+                const speed = Math.floor(Math.random() * (100 - 24) + 24);
+                speedStat.innerText = `İnternet: ${speed} Mbps (Tahmini)`;
             }
-        }
+        }, 3000);
 
-        // Hız Testi (Simulasyon)
-setTimeout(() => {
-    const speed = Math.floor(Math.random() * (100 - 24) + 24);
-    document.getElementById('speedStat').innerText = `İnternet: ${speed} Mbps (Tahmini)`;
-}, 3000);
-
-window.addEventListener("load", init);
-
-</script>
-
-
-</script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+        window.addEventListener("load", init);
+    </script>
 
 <script>
-  // --- 2. GERÇEK KULLANICI SAYISI (FIREBASE) ---
-  const firebaseConfig = {
-    apiKey: "AIzaSyAWYWvgPKUGp2MRN1_mYFn_s85SrtsdYBY",
-    authDomain: "n3ag-21380.firebaseapp.com",
-    databaseURL: "https://n3ag-21380-default-rtdb.firebaseio.com",
-    projectId: "n3ag-21380",
-    storageBucket: "n3ag-21380.firebasestorage.app",
-    messagingSenderId: "592239539097",
-    appId: "1:592239539097:web:f135630f54848c536b9908",
-    measurementId: "G-VRHVDH2CN0"
-  };
+    async function syncActiveUsers() {
+        try {
+            // Sunucudan gerçek veriyi çekiyoruz
+            const res = await fetch('/api/ping');
+            const data = await res.json();
+            
+            const display = document.getElementById('userCount');
+            
+            // data.count varsa ve sayıysa direkt yazdır
+            if(display && typeof data.count !== 'undefined') {
+                // Burada sakın +150 falan ekleme, sadece data.count kalsın
+                display.innerText = data.count; 
+            }
+        } catch (e) {
+            console.log("Sayaç senkronize edilemedi.");
+        }
+    }
 
-  firebase.initializeApp(firebaseConfig);
-  const fbDb = firebase.database();
-  const userRef = fbDb.ref('online_users');
-
-  // Giriş ve Çıkış takibi
-  const myUserRef = userRef.push();
-  myUserRef.set(true);
-  myUserRef.onDisconnect().remove();
-
-  // Ekrana canlı yazdırma
-  userRef.on('value', (snapshot) => {
-    const count = snapshot.numChildren();
-    const display = document.getElementById('userCount');
-    if(display) display.innerText = count > 0 ? count : 1;
-  });
-
-  // --- 3. MEVCUT FONKSİYONLARINI TAMAMLA ---
-  // Eski updateLiveUsers fonksiyonunu silebilirsin çünkü Firebase artık gerçek zamanlı yapıyor.
-  
-  // HTML'deki checkbox ID'sinin 'fpsBoost' olduğundan emin ol.
-  // Eğer yoksa sağ panele şu satırı ekle: 
-  // <input type="checkbox" id="fpsBoost"> FPS ve Performans Optimize Et
+    // Her 15 saniyede bir güncelle
+    setInterval(syncActiveUsers, 15000);
+    // Sayfa yüklenince ilk kez çalıştır
+    syncActiveUsers();
 </script>
+    </script>
 </body>
 </html>

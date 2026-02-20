@@ -1,0 +1,18 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "HIZLI DEPLOY",
+            "type": "shell",
+            "command": "cmd /c \"git add . && git commit -m 'Hizli Guncelleme' && git push\"",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        }
+    ]
+}
