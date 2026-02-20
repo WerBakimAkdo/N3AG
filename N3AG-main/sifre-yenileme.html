@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yeni Şifre Oluştur - N3AG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Login ile aynı CSS temelini kullanıyoruz */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+        body { height: 100vh; display: flex; justify-content: center; align-items: center; background: #000; color: white; overflow: hidden; }
+        
+        /* Animasyonlu Arka Plan (Login ile aynı) */
+        .bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(-45deg, #4b4444, #000, #332d2d, #020202); background-size: 400% 400%; animation: gradientBG 15s ease infinite; z-index: -1; }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        .card { width: 360px; padding: 32px; border-radius: 28px; background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(40px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 30px 80px rgba(0, 0, 0, .25); text-align: center; }
+        .logo { font-family: 'Orbitron', sans-serif; font-size: 28px; margin-bottom: 25px; letter-spacing: 4px; }
+        
+        input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: white; outline: none; }
+        button { width: 100%; padding: 16px; border-radius: 24px; background: white; color: black; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        button:hover { transform: scale(1.02); opacity: 0.9; }
+        
+        .password-wrapper { position: relative; }
+        .toggle-password { position: absolute; right: 15px; top: 15px; cursor: pointer; opacity: 0.5; }
+    </style>
+</head>
+<body>
+    <div class="bg"></div>
+    <div class="card">
+        <div class="logo">YENİ ŞİFRE</div>
+        <p style="font-size: 13px; opacity: 0.7; margin-bottom: 20px;">Lütfen yeni ve güçlü bir şifre belirleyin.</p>
+        
+        <form id="resetForm">
+            <div class="password-wrapper">
+                <input type="password" id="newPass" placeholder="Yeni Şifre" required>
+                <i class="fas fa-eye toggle-password" onclick="togglePass('newPass', this)"></i>
+            </div>
+            <div class="password-wrapper">
+                <input type="password" id="confirmPass" placeholder="Şifre Tekrar" required>
+            </div>
+            <button type="submit">Şifreyi Güncelle</button>
+        </form>
+    </div>
+
+    <script>
+        function togglePass(id, el) {
+            const input = document.getElementById(id);
+            input.type = input.type === "password" ? "text" : "password";
+            el.classList.toggle("fa-eye-slash");
+        }
+
+        document.getElementById('resetForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const newPassword = document.getElementById('newPass').value;
+    const confirmPass = document.getElementById('confirmPass').value;
+
+    // 1. Şifre kontrolü
+    if (newPassword !== confirmPass) {
+        alert("Şifreler birbiriyle eşleşmiyor!");
+        return;
+    }
+
+    // 2. URL'den token'ı çekme (En kritik yer burası!)
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+
+    if (!token) {
+        alert("Geçersiz veya eksik token!");
+        return;
+    }
+
+    try {
+        // 3. Backend'e (server.js'deki /sifre-yenile rotasına) istek atma
+        const res = await fetch('/sifre-yenile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, newPassword })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            alert("Şifreniz başarıyla güncellendi! Giriş yapabilirsiniz.");
+            window.location.href = "/"; // Login sayfasına yönlendir
+        } else {
+            alert("Hata: " + data.message);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Bir sunucu hatası oluştu!");
+    }
+});
+    </script>
+</body>
+</html>

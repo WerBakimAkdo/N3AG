@@ -1,0 +1,27 @@
+
+[
+  {
+    "name": "VS Code",
+    "icon": "https://link_to_icon.png",
+    "file": "https://download_link.com",
+    "site": "https://code.visualstudio.com",
+    "category": "dev", 
+    "size": 85
+  },
+  {
+    "name": "Steam",
+    "icon": "https://link_to_icon.png",
+    "file": "https://steam_link...",
+    "site": "https://store.steampowered.com",
+    "category": "gamer",
+    "size": 250
+  },
+  {
+    "name": "Chrome",
+    "icon": "...",
+    "file": "...",
+    "site": "...",
+    "category": "std",
+    "size": 90
+  }
+]

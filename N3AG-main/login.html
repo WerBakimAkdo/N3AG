@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>N3AG</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+        body { 
+            height: 100vh; display: flex; justify-content: center; align-items: center; 
+            background: linear-gradient(-45deg, #4b4444, #000, #332d2d, #020202); 
+            background-size: 400% 400%; animation: gradientBG 15s ease infinite; color: white; overflow: hidden;
+        }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .card { width: 360px; padding: 32px; border-radius: 28px; background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(40px); border: 1px solid rgba(255, 255, 255, 0.05); text-align: center; }
+        .logo { font-family: 'Orbitron', sans-serif; font-size: 42px; letter-spacing: 6px; margin-bottom: 30px; }
+        form { display: none; }
+        form.active { display: block; }
+        input { width: 100%; padding: 14px; margin-bottom: 14px; border-radius: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: white; outline: none; }
+        button { width: 100%; padding: 16px; border-radius: 24px; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); font-weight: 600; cursor: pointer; transition: 0.3s; }
+        button:hover { background: rgba(255,255,255,0.1); }
+        .links { margin-top: 14px; font-size: 14px; }
+        .links span { cursor: pointer; text-decoration: underline; }
+        .forgot { text-align: right; font-size: 13px; margin-bottom: 14px; cursor: pointer; opacity: 0.7; }
+        .toast {
+            position: fixed; top: 20px; right: 20px; padding: 16px 24px; border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); color: white; 
+            transform: translateX(200%); transition: 0.4s; z-index: 1000; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .toast.show { transform: translateX(0); }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">N3AG</div>
+
+        <form id="loginForm" class="active">
+    <input name="username" placeholder="Kullanıcı adı" required>
+    
+    <div style="position: relative; width: 100%;">
+        <input name="password" type="password" id="loginPass" placeholder="Şifre" required style="margin-bottom: 14px;">
+        <i class="fas fa-eye" id="togglePassword" style="position: absolute; right: 15px; top: 15px; cursor: pointer; color: #888;"></i>
+    </div>
+
+    <div class="forgot" onclick="showForgot()">Şifremi unuttum</div>
+    <button type="submit">Giriş Yap</button>
+    <div class="links">Hesabın yok mu? <span onclick="switchForm('registerForm')">Kayıt ol</span></div>
+</form>
+
+        <form id="registerForm">
+            <input name="username" placeholder="Kullanıcı adı" required>
+            <input name="email" type="email" placeholder="E-posta" required>
+            <input name="password" type="password" placeholder="Şifre" required>
+            <button type="submit">Kayıt Ol</button>
+            <div class="links"><span onclick="switchForm('loginForm')">Girişe dön</span></div>
+        </form>
+
+        <form id="forgotForm">
+            <input name="identifier" placeholder="E-posta veya kullanıcı adı" required>
+            <button type="submit" id="forgotBtn">Sıfırlama Linki Gönder</button>
+            <div class="links"><span onclick="location.reload()">Geri dön</span></div>
+        </form>
+    </div>
+
+    <script>
+        function showNotify(msg) {
+            let t = document.getElementById('toast') || document.createElement('div');
+            t.id = 'toast'; t.className = 'toast show'; t.innerText = msg;
+            if(!document.getElementById('toast')) document.body.appendChild(t);
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function switchForm(id) {
+            document.querySelectorAll('form').forEach(f => f.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function showForgot() { switchForm('forgotForm'); }
+
+        async function sendData(formId, url) {
+            const form = document.getElementById(formId);
+            const btn = form.querySelector('button');
+            const originalBtnText = btn.innerText;
+            
+            // Çift tıklamayı ve hata oluşmasını engellemek için butonu dondur
+            btn.disabled = true;
+            btn.innerText = "İşleniyor...";
+
+            const formData = Object.fromEntries(new FormData(form));
+            
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const r = await res.json();
+                showNotify(r.message);
+
+                if (r.success && r.redirect) {
+                    setTimeout(() => location.href = r.redirect, 1000);
+                }
+            } catch (e) {
+                console.error(e);
+                showNotify("İşlem başarısız!");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = originalBtnText;
+            }
+        }
+
+        document.getElementById('loginForm').onsubmit = (e) => { e.preventDefault(); sendData('loginForm', '/giris-yap'); };
+        document.getElementById('forgotForm').onsubmit = (e) => { e.preventDefault(); sendData('forgotForm', '/sifre-hatirlat'); };
+        document.getElementById('registerForm').onsubmit = (e) => { e.preventDefault(); sendData('registerForm', '/kayit-ol'); };
+        const togglePassword = document.querySelector('#togglePassword');
+const passwordInput = document.querySelector('#loginPass');
+
+togglePassword.addEventListener('click', function () {
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
+    this.classList.toggle('fa-eye-slash');
+});
+    </script>
+</body>
+</html>

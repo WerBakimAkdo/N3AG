@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N3AG - Ultimate Hub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- TEMA AYARLARI --- */
+        :root {
+            --bg-color: #050505;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --sidebar-bg: rgba(0,0,0,0.5);
+            --text-main: #ffffff;
+            --text-dim: #a0a0a0;
+            --accent: #00d2ff;
+            --accent-glow: rgba(0, 210, 255, 0.3);
+            --gradient: linear-gradient(45deg, #00d2ff, #3a7bd5);
+            --font-ui: 'Segoe UI', sans-serif;
+            --font-mono: 'Courier New', monospace;
+        }
+
+        /* TEMA SINIFLARI */
+        body.theme-cyber { --accent: #00d2ff; --gradient: linear-gradient(45deg, #00d2ff, #3a7bd5); }
+        body.theme-matrix { --bg-color: #001100; --accent: #00ff41; --gradient: linear-gradient(45deg, #00ff41, #008f11); --font-ui: 'Courier New', monospace; }
+        body.theme-red { --accent: #ff003c; --gradient: linear-gradient(45deg, #ff003c, #990000); }
+        body.theme-gold { --accent: #ffd700; --gradient: linear-gradient(45deg, #ffd700, #ffaa00); }
+        body.theme-purple { --accent: #bf00ff; --gradient: linear-gradient(45deg, #bf00ff, #7700ff); }
+        body.theme-orange { --accent: #ff6600; --gradient: linear-gradient(45deg, #ff6600, #ff9900); }
+        body.theme-white { --bg-color: #e0e0e0; --card-bg: rgba(0,0,0,0.05); --text-main: #111; --text-dim: #444; --accent: #333; --sidebar-bg: #fff; }
+        body.theme-ocean { --bg-color: #001e2b; --accent: #00fff2; --gradient: linear-gradient(to right, #00fff2, #006aff); }
+        body.theme-midnight { --bg-color: #0a0a1a; --accent: #7d7dff; --gradient: linear-gradient(45deg, #7d7dff, #4b0082); }
+        body.theme-hacker { --bg-color: #000; --card-bg: #111; --accent: #33ff00; border: 1px solid #33ff00; }
+
+        * { box-sizing: border-box; font-family: var(--font-ui); user-select: none; }
+        
+        body {
+            margin: 0; height: 100vh; display: flex; flex-direction: column;
+            background: radial-gradient(circle at center, #1a1a1a 0%, var(--bg-color) 100%);
+            color: var(--text-main); overflow: hidden; transition: background 0.5s, color 0.5s;
+        }
+
+        /* --- LOADING SCREEN (ASCII) --- */
+        #loadingScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 99999; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; transition: 1s;
+        }
+        .ascii-art {
+            font-family: 'Courier New', monospace; white-space: pre; font-size: 10px;
+            color: var(--accent); text-align: center;
+            animation: glitch 1s infinite alternate;
+        }
+        @media(min-width: 800px) { .ascii-art { font-size: 16px; } }
+
+        @keyframes glitch {
+            0% { transform: skew(0deg); opacity: 1; text-shadow: 2px 0 red; }
+            20% { transform: skew(-2deg); opacity: 0.8; text-shadow: -2px 0 blue; }
+            40% { transform: skew(2deg); opacity: 1; text-shadow: 2px 0 green; }
+            100% { transform: skew(0deg); opacity: 1; }
+        }
+
+        /* --- UI COMPONENTS --- */
+        .top-bar {
+    height: 60px; 
+    padding: 0 30px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    background: rgba(0,0,0,0.8); /* Saydamlığı biraz azalttım ki yazılar karışmasın */
+    backdrop-filter: blur(10px); 
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    position: relative; /* Fixed yaparsan alttaki her şeye padding vermen gerekir */
+    z-index: 1001; /* Menü her zaman en üstte olsun */
+}
+
+        .top-menu { display: flex; gap: 20px; align-items: center; }
+        
+        /* Dropdown Menu */
+        .dropdown { position: relative; display: inline-block; }
+        .drop-btn { background: none; border: none; color: var(--text-main); cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .drop-btn:hover { color: var(--accent); }
+        .drop-content {
+            display: none; position: absolute; right: 0; top: 100%; background: #111;
+            min-width: 160px; box-shadow: 0 8px 16px rgba(0,0,0,0.5); z-index: 100;
+            border: 1px solid var(--accent); border-radius: 8px; overflow: hidden;
+        }
+        .drop-content a { color: #fff; padding: 12px 16px; text-decoration: none; display: block; font-size: 13px; cursor: pointer; }
+        .drop-content a:hover { background: var(--accent); color: #000; }
+        .dropdown:hover .drop-content { display: block; }
+
+        /* Main Layout */
+        .container { display: flex; height: calc(100vh - 60px) ; margin-top: 0; /* Eğer hala çakışıyorsa burayı 60px yapabilirsin */}
+        
+        .sidebar {
+            width: 240px; background: var(--sidebar-bg); padding: 20px;
+            display: flex; flex-direction: column; gap: 5px;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+        .cat-item {
+            padding: 12px; border-radius: 8px; cursor: pointer; color: var(--text-dim);
+            transition: 0.2s; display: flex; align-items: center; gap: 10px; font-size: 14px;
+        }
+        .cat-item:hover, .cat-item.active { background: var(--accent); color: #000; font-weight: bold; }
+
+       .content {
+    flex: 1;
+    padding: 30px;
+    /* Sağ tarafa panelin genişliği (320px) + biraz boşluk (20px) ekliyoruz */
+    margin-right: 340px; 
+    overflow-y: auto;
+    height: calc(100vh - 60px);
+}
+        
+        .search-bar {
+            width: 100%; max-width: 500px; padding: 12px 20px; border-radius: 12px;
+            background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1);
+            color: white; outline: none; margin-bottom: 20px; font-size: 14px;
+        }
+        .search-bar:focus { border-color: var(--accent); }
+
+        .app-grid {
+    display: grid;
+    /* Ekran daralınca kartlar iç içe girmesin diye minimum genişlik verdik */
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+    gap: 20px;
+    padding-bottom: 50px;
+}
+        
+        .app-card {
+            background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px; padding: 15px; text-align: center; cursor: pointer;
+            transition: 0.3s; position: relative;
+        }
+        .app-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 5px 15px var(--accent-glow); }
+        .app-card.selected { border: 2px solid var(--accent); background: rgba(0, 210, 255, 0.1); }
+        .app-icon { width: 48px; height: 48px; object-fit: contain; margin-bottom: 10px; }
+        .app-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Cart Panel (Right) */
+   .cart-overlay {
+    width: 320px;
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 210, 255, 0.2);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    
+    /* Panel artık içeriğin üstüne binmez, kendi alanında sabit kalır */
+    position: fixed;
+    right: 20px; /* Kenardan biraz boşluk bırakırsan daha 'competitive' durur */
+    top: 80px;   /* Üst barın biraz altından başlasın */
+    bottom: 20px; /* Alt kısımdan boşluk */
+    height: auto; /* Sabit height yerine esnek bıraktık */
+    border-radius: 16px;
+    z-index: 100;
+    box-shadow: 0 0 40px rgba(0,0,0,0.7);
+}
+
+/* Scrollbar'ı daha şık yapalım (Competitive vibe) */
+.cart-list::-webkit-scrollbar {
+    width: 4px;
+}
+.cart-list::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 10px;
+}
+        .cart-item { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; color: #ddd; }
+        .cart-item i { color: #ff4444; cursor: pointer; }
+        
+        .setup-options { background: #111; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #222; }
+        .chk-group { display: flex; align-items: center; gap: 10px; font-size: 12px; margin-bottom: 5px; color: #aaa; }
+        
+        .download-btn {
+            width: 100%; padding: 15px; background: var(--gradient); border: none;
+            border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 14px;
+            box-shadow: 0 0 20px var(--accent-glow); transition: 0.3s;
+        }
+        .download-btn:hover { filter: brightness(1.2); letter-spacing: 1px; }
+
+        /* --- FULL PROFILE MODAL --- */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 2000;
+            justify-content: center; align-items: center;
+        }
+        .profile-container {
+            width: 800px; height: 500px; background: #0c0c0c; border: 1px solid var(--accent);
+            border-radius: 20px; display: flex; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        }
+        .p-sidebar { width: 200px; background: #111; padding: 30px 20px; border-right: 1px solid #222; }
+        .p-btn { 
+            width: 100%; padding: 12px; text-align: left; background: none; border: none; 
+            color: #888; cursor: pointer; font-size: 14px; margin-bottom: 5px; border-radius: 8px; 
+        }
+        .p-btn.active { background: var(--accent); color: #000; font-weight: bold; }
+        
+        .p-content { flex: 1; padding: 40px; overflow-y: auto; }
+        .p-group { margin-bottom: 20px; }
+        .p-label { font-size: 12px; color: var(--accent); margin-bottom: 5px; font-weight: bold; text-transform: uppercase;}
+        .p-input { 
+            width: 100%; background: #1a1a1a; border: 1px solid #333; color: white; 
+            padding: 12px; border-radius: 8px; outline: none; font-size: 14px;
+        }
+        .p-input:focus { border-color: var(--accent); }
+        .p-input[readonly] { opacity: 0.5; cursor: not-allowed; }
+
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: var(--accent); color: #000; padding: 12px 25px; border-radius: 30px;
+            font-weight: bold; opacity: 0; transition: 0.3s; pointer-events: none; z-index: 3000;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+        .toast.show { opacity: 1; bottom: 50px; }
+        @media (max-width: 1100px) {
+    .content {
+        margin-right: 0; /* Boşluğu kaldır */
+    }
+    .cart-overlay {
+        position: relative; /* Sabitliği kaldır */
+        width: 100%;
+        right: 0;
+        top: 0;
+        margin-top: 20px;
+    }
+}
+
+    </style>
+</head>
+<body class="theme-cyber">
+
+    <div id="loadingScreen">
+        <div class="ascii-art">
+███    ██ ██████   █████   ██████ 
+████   ██      ██ ██   ██ ██      
+██ ██  ██  █████  ███████ ██   ███
+██  ██ ██      ██ ██   ██ ██    ██
+██   ████ ██████  ██   ██  ██████ 
+       SYSTEMS INITIALIZING...
+        </div>
+    </div>
+
+    <div class="top-bar">
+        <div class="logo">N3AG <span>OS</span></div>
+        <div class="top-menu">
+            <div style="font-size:12px; color:var(--accent); font-weight:bold;">
+                <i class="fas fa-satellite-dish"></i> SUNUCU: <span style="color:#fff">ÇEVRİMİÇİ</span>
+            </div>
+            
+            <div class="dropdown">
+                <button class="drop-btn"><i class="fas fa-palette"></i> Temalar <i class="fas fa-chevron-down"></i></button>
+                <div class="drop-content">
+                    <a onclick="setTheme('theme-cyber')">Cyber Blue</a>
+                    <a onclick="setTheme('theme-matrix')">Matrix Green</a>
+                    <a onclick="setTheme('theme-red')">Red Alert</a>
+                    <a onclick="setTheme('theme-gold')">Royal Gold</a>
+                    <a onclick="setTheme('theme-purple')">Neon Purple</a>
+                    <a onclick="setTheme('theme-orange')">Sunset Orange</a>
+                    <a onclick="setTheme('theme-ocean')">Deep Ocean</a>
+                    <a onclick="setTheme('theme-midnight')">Midnight</a>
+                    <a onclick="setTheme('theme-white')">Clean White</a>
+                    <a onclick="setTheme('theme-hacker')">Hackerman</a>
+                </div>
+            </div>
+
+            <button class="drop-btn" onclick="openProfile()"><i class="fas fa-user-circle"></i> Profil</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="cat-item active" onclick="filterCat('all', this)"><i class="fas fa-th-large"></i> Hepsi</div>
+            <div class="cat-item" onclick="filterCat('browser', this)"><i class="fab fa-chrome"></i> Tarayıcılar</div>
+            <div class="cat-item" onclick="filterCat('gamer', this)"><i class="fas fa-gamepad"></i> Oyuncu</div>
+            <div class="cat-item" onclick="filterCat('dev', this)"><i class="fas fa-code"></i> Yazılım</div>
+            <div class="cat-item" onclick="filterCat('media', this)"><i class="fas fa-play-circle"></i> Sosyal</div>
+            <div class="cat-item" onclick="filterCat('office', this)"><i class="fas fa-file-word"></i> Ofis</div>
+            <div class="cat-item" onclick="filterCat('tools', this)"><i class="fas fa-tools"></i> Araçlar</div>
+            <div class="cat-item" onclick="filterCat('drivers', this)"><i class="fas fa-microchip"></i> Sürücüler</div>
+        </div>
+
+        <div class="content">
+            <input type="text" class="search-bar" placeholder="100+ uygulama arasında ara..." onkeyup="searchApp(this.value)">
+            <div class="app-grid" id="appGrid"></div>
+        </div>
+
+        <div class="cart-overlay">
+            <h3 style="color:var(--accent); margin-top:0;">Kurulum Kuyruğu</h3>
+            <div class="cart-list" id="cartList">
+                <div style="text-align:center; color:#555; margin-top:50px; font-size:12px;">Henüz seçim yapılmadı.</div>
+            </div>
+
+            <div class="setup-options">
+                <div style="font-size:12px; font-weight:bold; color:var(--text-main); margin-bottom:5px;">Sistem Optimizasyonu</div>
+                <div class="chk-group"><input type="checkbox" id="optGame" checked> Oyun Modunu Aç</div>
+                <div class="chk-group"><input type="checkbox" id="optDebloat" checked> Windows'u Hızlandır (Debloat)</div>
+                <div class="chk-group"><input type="checkbox" id="optTele"> İzlemeyi Kapat (Anti-Telemetry)</div>
+                <div class="chk-group"><input type="checkbox" id="optDark"> Koyu Temayı Zorla</div>
+            </div>
+
+            <div style="font-size:11px; color:#666; text-align:center; margin-bottom:10px;" id="speedStat">İnternet: Hesaplanıyor...</div>
+            <button class="download-btn" onclick="downloadScript()">KURULUMU BAŞLAT</button>
+        </div>
+    </div>
+
+    <div class="modal" id="profileModal">
+        <div class="profile-container">
+            <div class="p-sidebar">
+                <div style="text-align:center; margin-bottom:30px;">
+                    <div style="width:80px; height:80px; background:var(--gradient); border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; font-size:30px; color:white;">
+                        <i class="fas fa-user-astronaut"></i>
+                    </div>
+                    <div style="font-weight:bold;" id="pSideName">Kullanıcı</div>
+                </div>
+                <button class="p-btn active" onclick="switchTab('info')">Hesap Bilgileri</button>
+                <button class="p-btn" onclick="switchTab('security')">Güvenlik</button>
+                <button class="p-btn" onclick="switchTab('settings')">Ayarlar</button>
+                <button class="p-btn" style="color:#ff4444; margin-top:50px;" onclick="location.href='/'">Çıkış Yap</button>
+                <button class="p-btn" style="margin-top:10px;" onclick="closeProfile()">Kapat</button>
+            </div>
+
+            <div class="p-content" id="tab-info">
+                <h2 style="margin-top:0; color:var(--accent)">Profil Bilgileri</h2>
+                <div class="p-group">
+                    <div class="p-label">Kullanıcı Adı</div>
+                    <input class="p-input" id="pUsername" readonly value="Yükleniyor...">
+                </div>
+                <div class="p-group">
+                    <div class="p-label">E-Posta Adresi</div>
+                    <input class="p-input" id="pEmail" value="Yükleniyor...">
+                </div>
+                <div class="p-group">
+                    <div class="p-label">Telefon Numarası (Opsiyonel)</div>
+                    <input class="p-input" type="tel" placeholder="+90 5XX XXX XX XX">
+                </div>
+                <div class="p-group">
+                    <div class="p-label">Biyografi</div>
+                    <textarea class="p-input" rows="3" placeholder="Kendinden bahset..."></textarea>
+                </div>
+                <button class="download-btn" style="width:150px;" onclick="saveProfile()">Kaydet</button>
+            </div>
+
+            <div class="p-content" id="tab-security" style="display:none;">
+                <h2 style="margin-top:0; color:var(--accent)">Şifre & Güvenlik</h2>
+                <div class="p-group">
+                    <div class="p-label">Mevcut Şifre</div>
+                    <input type="password" class="p-input" id="oldPass">
+                </div>
+                <div class="p-group">
+                    <div class="p-label">Yeni Şifre</div>
+                    <input type="password" class="p-input" id="newPass">
+                </div>
+                <button class="download-btn" style="width:200px; background:#ff4444;" onclick="changePassword()">Şifreyi Güncelle</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">İşlem Başarılı!</div>
+
+    <script>
+        // --- 1. DATABASE (TOP 100+ WINGET) ---
+        const database = [
+            // BROWSERS
+            {id: "Google.Chrome", name: "Google Chrome", cat: "browser", icon: "https://upload.wikimedia.org/wikipedia/commons/e/e1/Google_Chrome_icon_%28February_2022%29.svg"},
+            {id: "Mozilla.Firefox", name: "Firefox", cat: "browser", icon: "https://upload.wikimedia.org/wikipedia/commons/a/a0/Firefox_logo%2C_2019.svg"},
+            {id: "Opera.OperaGX", name: "Opera GX", cat: "browser", icon: "https://play-lh.googleusercontent.com/VxUyAlymIKRRQt3dlZklsiyapiPh6kPEVnRl9wKSmLXAFHu9jiENWO44VuhNwGLVMLU"},
+            {id: "Brave.Brave", name: "Brave Browser", cat: "browser", icon: "https://upload.wikimedia.org/wikipedia/commons/9/9d/Brave_lion_icon.svg"},
+            {id: "Microsoft.Edge", name: "Microsoft Edge", cat: "browser", icon: "https://upload.wikimedia.org/wikipedia/commons/9/98/Microsoft_Edge_logo_%282019%29.svg"},
+            {id: "TorProject.TorBrowser", name: "Tor Browser", cat: "browser", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Tor-logo-2011-flat.svg/1280px-Tor-logo-2011-flat.svg.png"},
+
+            // GAMER
+            {id: "Valve.Steam", name: "Steam", cat: "gamer", icon: "https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg"},
+            {id: "EpicGames.EpicGamesLauncher", name: "Epic Games", cat: "gamer", icon: "https://upload.wikimedia.org/wikipedia/commons/3/31/Epic_Games_logo.svg"},
+            
+            {id: "RiotGames.RiotClient", name: "Riot Client", cat: "gamer", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4M7aRGF01V1tQ_HNdbPT1mBhc_gWaGedqrA&s"},
+            
+            // DEV
+            {id: "Microsoft.VisualStudioCode", name: "VS Code", cat: "dev", icon: "https://upload.wikimedia.org/wikipedia/commons/9/9a/Visual_Studio_Code_1.35_icon.svg"},
+         
+            // MEDIA
+            {id: "Spotify.Spotify", name: "Spotify", cat: "media", icon: "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg"},
+            {id: "Zoom.Zoom", name: "Zoom", cat: "media", icon: "https://t4.ftcdn.net/jpg/03/75/33/61/360_F_375336103_KQSAG9rQuOgdSx01GNIPK9abZaIeGoGR.jpg"},
+            {id: "Telegram.TelegramDesktop", name: "Telegram", cat: "media", icon: "https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg"},
+            {id: "WhatsApp.WhatsApp", name: "WhatsApp", cat: "media", icon: "https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"},
+            
+           {id: "Discord.Discord", name: "Discord", cat: "media", icon: "https://logos-world.net/wp-content/uploads/2020/12/Discord-Emblem.png"},
+
+            // TOOLS
+            {id: "RARLab.WinRAR", name: "WinRAR", cat: "tools", icon: "https://www.win-rar.com/fileadmin/images/winrar-archive.png"},
+           
+            {id: "TeamViewer.TeamViewer", name: "TeamViewer", cat: "tools", icon: "https://play-lh.googleusercontent.com/SLSU68Ozmpz3k_id_u1sr755_-ZcwK8iLA3sv1Jj04j91-kFrSZpxTUNTOKuwBrU9g"},
+            {id: "AnyDeskSoftwareGmbH.AnyDesk", name: "AnyDesk", cat: "tools", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSH5DY0ov79g0gxlACVRfqV4w672EJRWB-wsg&s"},
+             {id: "OBSProject.OBSStudio", name: "OBS Studio", cat: "tools", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXYPCZMbq3_NrL8S7SMUhDc03jTrado0mDpg&s"},
+            {id: "CPUID.CPU-Z", name: "CPU-Z", cat: "tools", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/CPU-Z_Icon.svg/1280px-CPU-Z_Icon.svg.png"},
+            {id: "CrystalDewWorld.CrystalDiskInfo", name: "CrystalDisk", cat: "tools", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmuPLvZW1uC3Ce1ju6xE0uVVS7vKOCu_0N_A&s"},
+           
+            // OFFICE
+            
+            {id: "Adobe.Acrobat.Reader.64-bit", name: "Adobe Reader", cat: "office", icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzA22Ao3coxxuIZ1RBYGxETEMzCu1Yj3ELtw&s"},
+           
+            // DRIVERS & RUNTIMES
+            {id: "Nvidia.GeForceExperience", name: "GeForce Exp.", cat: "drivers", icon: "https://www.nvidia.com/content/dam/en-zz/Solutions/about-nvidia/logo-and-brand/02-nvidia-logo-color-grn-500x200-4c25-p@2x.png"},
+            {id: "AMD.Adrenalin.Edition", name: "AMD Adrenalin", cat: "drivers", icon: "https://play-lh.googleusercontent.com/S4SYraF727oJgsuEh8lEwV_RladmWJFML--52OQfjk71hV6S6n42tL-oXUXhlEJ3ng=w240-h480-rw"},
+            {id: "Microsoft.DirectX", name: "DirectX", cat: "drivers", icon: "https://d1q3zw97enxzq2.cloudfront.net/images/what_is_directx.width-1000.format-webp.webp"},
+            {id: "Microsoft.VCRedist.2015+.x64", name: "VC++ Redist", cat: "drivers", icon: "https://img.utdstc.com/icon/d34/a74/d34a74281538887e01059f9801d0a1f14bfcebc6eb10a6371e5a97be500f0bb8:200"}
+        ];
+
+        let cart = [];
+
+        // --- 2. LOGIC ---
+        function init() {
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.opacity = 0;
+                setTimeout(() => document.getElementById('loadingScreen').style.display = 'none', 1000);
+            }, 2500); // 2.5 sn intro
+
+            renderGrid(database);
+            fetchUserData(); // Profil verisi çek
+        }
+
+        function renderGrid(data) {
+            const grid = document.getElementById('appGrid');
+            grid.innerHTML = "";
+            data.forEach(app => {
+                const isSelected = cart.find(x => x.id === app.id) ? 'selected' : '';
+                grid.innerHTML += `
+                    <div class="app-card ${isSelected}" onclick="toggleCart('${app.id}')">
+                        <img src="${app.icon}" class="app-icon" onerror="this.src='https://via.placeholder.com/50'">
+                        <div class="app-name">${app.name}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterCat(cat, btn) {
+            document.querySelectorAll('.cat-item').forEach(x => x.classList.remove('active'));
+            btn.classList.add('active');
+            
+            if(cat === 'all') renderGrid(database);
+            else renderGrid(database.filter(x => x.cat === cat));
+        }
+
+        function searchApp(query) {
+            const q = query.toLowerCase();
+            renderGrid(database.filter(x => x.name.toLowerCase().includes(q)));
+        }
+
+        function toggleCart(id) {
+            const item = database.find(x => x.id === id);
+            const idx = cart.findIndex(x => x.id === id);
+            
+            if(idx > -1) cart.splice(idx, 1);
+            else cart.push(item);
+            
+            renderGrid(document.querySelector('.cat-item.active').innerText.includes('Hepsi') ? database : database.filter(x => x.cat === database.find(y => y.id === id).cat));
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const list = document.getElementById('cartList');
+            list.innerHTML = "";
+            
+            cart.forEach(item => {
+                list.innerHTML += `
+                    <div class="cart-item">
+                        <span>${item.name}</span>
+                        <i class="fas fa-times" onclick="toggleCart('${item.id}')"></i>
+                    </div>
+                `;
+            });
+            
+            if(cart.length === 0) list.innerHTML = '<div style="text-align:center; color:#555; margin-top:50px; font-size:12px;">Henüz seçim yapılmadı.</div>';
+        }
+
+        // --- 3. THE SCRIPT GENERATOR (DETAYLI OPTİMİZASYON) ---
+       
+function downloadScript() {
+    if(cart.length === 0) return showToast("Lütfen en az 1 uygulama seç!");
+
+    let script = `@echo off
+chcp 65001 >nul
+setlocal EnableExtensions EnableDelayedExpansion
+title N3AG OS - Otomatik Kurulum
+color 0b
+cls
+
+echo =========================================
+echo   N3AG SYSTEM INSTALLER
+echo =========================================
+echo.
+
+where winget >nul 2>&1
+IF %ERRORLEVEL% NEQ 0 (
+  echo [HATA] Winget bulunamadi!
+  echo Windows 10/11 gerekli.
+  pause
+  exit /b
+)
+
+echo [BILGI] Winget bulundu, devam ediliyor...
+echo.
+`;
+
+    cart.forEach(app => {
+        script += `
+echo -----------------------------------------
+echo Kuruluyor: ${app.name}
+winget install -e --id ${app.id} --accept-source-agreements --accept-package-agreements
+IF %ERRORLEVEL% NEQ 0 (
+  echo [HATA] ${app.name} kurulamadi ama devam ediliyor...
+  timeout /t 2 >nul
+) ELSE (
+  echo [+] ${app.name} tamamlandi.
+)
+`;
+    });
+
+    script += `
+echo.
+echo =========================================
+echo   TUM ISLEMLER BITTI
+echo =========================================
+echo.
+pause
+exit
+`;
+
+    const blob = new Blob([script], { type: "text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "N3AG_Setup.bat";
+    a.click();
+
+    showToast("Kurulum dosyası indirildi");
+}
+
+
+
+
+
+        // --- 4. PROFILE & SYSTEM ---
+        function setTheme(theme) {
+            document.body.className = theme;
+            showToast("Tema Değiştirildi: " + theme.replace('theme-', '').toUpperCase());
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // Profile Logic (Real Data Fetch)
+        async function fetchUserData() {
+            try {
+                const res = await fetch('/api/user-info');
+                const data = await res.json();
+                if(data.success) {
+                    document.getElementById('pUsername').value = data.user.username;
+                    document.getElementById('pSideName').innerText = data.user.username;
+                    document.getElementById('pEmail').value = data.user.email || "";
+                }
+            } catch(e) { console.log("Dev Mode: API çalışmıyor."); }
+        }
+
+        function openProfile() { document.getElementById('profileModal').style.display = 'flex'; }
+        function closeProfile() { document.getElementById('profileModal').style.display = 'none'; }
+        
+        function switchTab(tabId) {
+            document.querySelectorAll('.p-content').forEach(x => x.style.display = 'none');
+            document.getElementById('tab-' + tabId).style.display = 'block';
+            document.querySelectorAll('.p-btn').forEach(x => x.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function saveProfile() {
+            showToast("Profil Bilgileri Güncellendi!");
+        }
+
+        async function changePassword() {
+            const oldP = document.getElementById('oldPass').value;
+            const newP = document.getElementById('newPass').value;
+            
+            if(!oldP || !newP) return showToast("Lütfen alanları doldur!");
+
+            try {
+                const res = await fetch('/api/update-password', {
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({oldPassword: oldP, newPassword: newP})
+                });
+                const data = await res.json();
+                showToast(data.message);
+                if(data.success) document.querySelectorAll('.p-input').forEach(i => i.value = '');
+            } catch(e) {
+                showToast("Sunucu Hatası!");
+            }
+        }
+
+        // Hız Testi (Simulasyon)
+setTimeout(() => {
+    const speed = Math.floor(Math.random() * (100 - 24) + 24);
+    document.getElementById('speedStat').innerText = `İnternet: ${speed} Mbps (Tahmini)`;
+}, 3000);
+
+window.addEventListener("load", init);
+</script>
+
+
+</script>
+
+</body>
+</html>

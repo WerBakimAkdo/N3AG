@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N3AG - Profilim</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --accent: #00d2ff; 
+            --accent-gradient: linear-gradient(45deg, #00d2ff, #3a7bd5);
+            --text-main: #ffffff;
+            --text-dim: #a0a0a0;
+        }
+
+        * { box-sizing: border-box; cursor: default; }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(-45deg, #1a1a1a, #000, #111, #050505); 
+            background-size: 400% 400%; 
+            animation: gradientBG 15s ease infinite; 
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        @keyframes gradientBG { 
+            0% { background-position: 0% 50%; } 
+            50% { background-position: 100% 50%; } 
+            100% { background-position: 0% 50%; } 
+        }
+
+        /* --- TIKLANABİLİR ALANLAR --- */
+        .btn, .back-btn, .logout-btn, .close-btn { 
+            cursor: pointer !important; 
+            user-select: none; 
+        }
+
+        .profile-card {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(0, 210, 255, 0.2);
+            border-radius: 32px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .avatar-area {
+            width: 90px; height: 90px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 35px;
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.3);
+        }
+
+        h2 { margin: 10px 0; font-size: 26px; letter-spacing: 1px; }
+
+        .info-section {
+            text-align: left;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 20px;
+            border-radius: 20px;
+            margin: 25px 0;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .info-item { margin-bottom: 15px; }
+        .info-item:last-child { margin-bottom: 0; }
+        .info-label { font-size: 11px; color: var(--accent); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .info-value { font-size: 15px; margin-top: 4px; color: #fff; }
+
+        .action-btns { display: flex; flex-direction: column; gap: 12px; }
+
+        .btn {
+            padding: 15px; border-radius: 16px; border: none;
+            font-weight: 600; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px; text-decoration: none; font-size: 14px;
+        }
+
+        .btn-primary { background: var(--accent-gradient); color: white; }
+        .btn-secondary { background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); }
+        .btn:hover { transform: translateY(-3px); filter: brightness(1.2); box-shadow: 0 10px 20px rgba(0, 210, 255, 0.15); }
+
+        .logout-btn { 
+            color: #ff4444; margin-top: 20px; font-size: 13px; 
+            display: inline-block; text-decoration: none; opacity: 0.7; transition: 0.3s;
+        }
+        .logout-btn:hover { opacity: 1; transform: scale(1.05); }
+
+        .back-link {
+            position: absolute; top: 30px; left: 30px;
+            color: var(--text-dim); text-decoration: none;
+            display: flex; align-items: center; gap: 8px; font-size: 13px; transition: 0.3s;
+        }
+        .back-link:hover { color: var(--accent); }
+
+        /* --- MODAL --- */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; 
+            width: 100%; height: 100%; background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px); z-index: 1000;
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: #0a0a0a; padding: 35px; border-radius: 28px;
+            border: 1px solid var(--accent); width: 100%; max-width: 350px; text-align: center;
+        }
+        input {
+            width: 100%; padding: 14px; margin: 10px 0;
+            background: #111; border: 1px solid #333;
+            border-radius: 12px; color: white; outline: none; transition: 0.3s;
+            cursor: text;
+        }
+        input:focus { border-color: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <a href="programs.html" class="back-link back-btn">
+        <i class="fas fa-arrow-left"></i> Geri Dön
+    </a>
+
+    <div class="profile-card">
+        <div class="avatar-area">
+            <i class="fas fa-user-shield"></i>
+        </div>
+        <h2>Hesap Yönetimi</h2>
+        
+        <div class="info-section">
+            <div class="info-item">
+                <div class="info-label">Kullanıcı Adı</div>
+                <div class="info-value" id="disp-username">Yükleniyor...</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">E-Posta Adresi</div>
+                <div class="info-value" id="disp-email">Yükleniyor...</div>
+            </div>
+        </div>
+
+        <div class="action-btns">
+            <button class="btn btn-primary" onclick="openModal()">
+                <i class="fas fa-lock"></i> Şifre Değiştir
+            </button>
+            <a href="mailto:n3ag.services@gmail.com" class="btn btn-secondary">
+                <i class="fas fa-envelope"></i> Destek Al
+            </a>
+        </div>
+
+        <a href="/" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Oturumu Kapat
+        </a>
+    </div>
+
+    <div id="passModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0">Şifre Güncelle</h3>
+            <input type="password" id="oldPass" placeholder="Mevcut Şifre">
+            <input type="password" id="newPass" placeholder="Yeni Şifre">
+            <button class="btn btn-primary" style="width:100%" onclick="updatePassword()">
+                Değişiklikleri Kaydet
+            </button>
+            <button class="close-btn" onclick="closeModal()" style="background:none; border:none; color:var(--text-dim); margin-top:15px; width:100%">
+                Vazgeç
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Bilgileri Çek (Eski Çalışan Mantığın)
+        async function loadUserInfo() {
+            try {
+                const res = await fetch('/api/user-info');
+                if (res.status === 401) {
+                    window.location.href = "/";
+                    return;
+                }
+                const data = await res.json();
+                if (data.success && data.user) {
+                    document.getElementById('disp-username').innerText = data.user.username;
+                    document.getElementById('disp-email').innerText = data.user.email || "E-posta yok";
+                }
+            } catch (err) {
+                console.error("Bilgi çekme hatası:", err);
+                document.getElementById('disp-username').innerText = "Hata!";
+            }
+        }
+
+        function openModal() { document.getElementById('passModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('passModal').style.display = 'none'; }
+
+        // Şifre Güncelleme (Eski Çalışan Fonksiyonun)
+        async function updatePassword() {
+            const oldPassword = document.getElementById('oldPass').value;
+            const newPassword = document.getElementById('newPass').value;
+
+            if(!oldPassword || !newPassword) return alert("Lütfen tüm alanları doldurun!");
+
+            try {
+                const res = await fetch('/api/update-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ oldPassword, newPassword })
+                });
+
+                const data = await res.json();
+                alert(data.message);
+                if(data.success) {
+                    location.reload();
+                }
+            } catch (err) {
+                alert("Bir hata oluştu.");
+            }
+        }
+
+        // Başlangıçta çalıştır
+        loadUserInfo();
+    </script>
+</body>
+</html>
